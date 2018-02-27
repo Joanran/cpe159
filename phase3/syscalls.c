@@ -3,6 +3,7 @@
 
 #include "kernel_constants.h" // SYS_WRITE 4, SYS_GETPID 20, etc.
 #include "services.h"
+
 int sys_getpid(void) {
    int pid;
 
@@ -39,3 +40,10 @@ void sys_sleep(int centi_sec) { // 1 centi-second is 1/100 of a second
        );
 }
 
+void sys_semwait(int sem_num) {
+	
+}
+
+void sys_sempost(int sem_num) {
+	
+}
