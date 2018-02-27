@@ -10,6 +10,11 @@ typedef void (*func_p_t)(); // void-return function pointer type
 typedef enum {AVAIL, READY, RUN, SLEEP} state_t;
 
 typedef struct {
+	int val;	// semaphore type
+	pid_q_t wait_q;
+}semaphore_t;
+
+typedef struct {
    unsigned int regs[4];
    unsigned int ebx;
    unsigned int edx;

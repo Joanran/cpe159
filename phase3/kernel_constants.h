@@ -11,6 +11,9 @@
 #define Q_SIZE 20            // queuing capacity
 #define PROC_STACK_SIZE 4096 // process runtime stack in bytes
 
+#define SYS_SEMWAIT 300
+#define SYS_SEMPOST 301
+
 #define SYSCALL 128
 #define STDOUT 1
 #define SYS_WRITE 4

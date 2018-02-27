@@ -12,10 +12,12 @@
 struct i386_gate *IDT_p;
 int current_time;
 // kernel data are all declared here:
+
 int run_pid;                       // currently running PID; if -1, none selected
 pid_q_t ready_pid_q, avail_pid_q;  // avail PID and those ready to run
 pcb_t pcb[PROC_NUM];               // Process Control Blocks
 char proc_stack[PROC_NUM][PROC_STACK_SIZE]; // process runtime stacks
+semaphore_t video_sum;			// Phase 3
 
 void InitKernelData(void) {        // init kernel data
   	int i; //, ret;
