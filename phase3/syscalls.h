@@ -8,6 +8,8 @@
 int sys_getpid(void); 
 void sys_write(int, char *, int);
 void sys_sleep(int);
-void SemwaitService(int);
+
+void sys_semwait(int);
+void sys_sempost(int);
 
 #endif
