@@ -8,10 +8,13 @@
 void NewProcService(func_p_t);
 void TimerService(void);
 
-//add those new ones
 void SyscallService(trapframe_t *);
 void SleepService(int);
 void GetpidService(int *);
 void WriteService(int,char *,int);
+
+//new ones are below
+void SemwaitService(int);
+void SempostService(int);
 
 #endif
