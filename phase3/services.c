@@ -103,3 +103,35 @@ void WriteService(int fileno, char *str, int len) {
 		}
 	}
 }
+
+void SemWaitService(int sem_num) {
+	if(sem_num==STDOUT) {
+		if (video_sem.val > 0){	//if the value of the video semaphore is greater than zero	
+			video_sem--;	//downcount the semaphore value by one
+		} else {
+			//block the running process
+			// 1. enqueue it to the wait queue in the semaphore
+			// 2. change its state
+			// 3. no running process anymore (lack one)
+		}
+	} else {
+		cons_printf("Kernel Panic: non-such semaphore number!");	
+	}
+	
+}
+
+void SempostService(int sem_num) {
+	if(sem_num==STDOUT) {
+		if(video_sem.wait_q==0) {	// if the wait queue of the video semaphore is empty
+			video_sem.value++;	//upcount the semaphore value by one	
+		} else {
+		// liberate a waiting process
+		// 1. dequeue it from the wait queue in the semaphore
+		// 2. change its state
+		// 3. enqueue the linerated PID to the ready PID queue
+		}
+	} else {
+		cons_printf("Kernel Panic: non-such semaphore number!");		
+	}
+
+}
