@@ -41,9 +41,21 @@ void sys_sleep(int centi_sec) { // 1 centi-second is 1/100 of a second
 }
 
 void sys_semwait(int sem_num) {
-	
+	asm("movl %0, %%eax;        //service call number
+	     movl %1, %%ebx;        //sem number
+	     int $128"
+	     :
+       : "g" (SYS_SEMWAIT), "g" (sem_num)
+       : "eax", "ebx"
+       );
 }
 
 void sys_sempost(int sem_num) {
-	
+	asm("movl %0, %%eax;        //service call number
+	     movl %1, %%ebx;        //sem number
+	     int $128"
+	     :
+       : "g" (SYS_SEMPOST), "g" (sem_num)
+       : "eax", "ebx"
+       );
 }
