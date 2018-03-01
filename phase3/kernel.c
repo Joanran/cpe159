@@ -34,6 +34,8 @@ void InitKernelData(void) {        // init kernel data
 void InitKernelControl(void) {     // init kernel control 
 	current_time=0;
 	video_sum.val = 1;
+	video_sem->wait_q.size=0;
+	
 	IDT_p = get_idt_base(); //get IDT location
 	//show: "IDT located at DRAM addr %x (%d).\n" (both address of IDT)
 	cons_printf("IDT located at DRAM addr %x (%d). \n", IDT_p, IDT_p );
