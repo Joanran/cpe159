@@ -33,7 +33,7 @@ void InitKernelData(void) {        // init kernel data
 
 void InitKernelControl(void) {     // init kernel control 
 	current_time=0;
-	video_sum.val = 1;
+	video_sem.val = 1;
 	video_sem->wait_q.size=0;
 	
 	IDT_p = get_idt_base(); //get IDT location
