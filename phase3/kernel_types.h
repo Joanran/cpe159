@@ -7,7 +7,7 @@
 
 typedef void (*func_p_t)(); // void-return function pointer type
 
-typedef enum {AVAIL, READY, RUN, SLEEP} state_t;
+typedef enum {AVAIL, READY, RUN, SLEEP, WAIT} state_t;
 
 typedef struct {
 	int val;	// semaphore type
