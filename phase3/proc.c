@@ -32,5 +32,17 @@ void UserProc(void) {
    while(1) {
       sys_write(STDOUT, str, 3);   // show my PID
       sys_sleep(centi_sec);        // sleep for .5 sec x PID
+      
+      //new stuff below
+      sys_semwait(STDOUT);                      // if commented out?
+      sys_write(STDOUT, str, 3);
+      for(i=0; i<LOOP/2; i++) asm("inb $0x80"); // burn CPU time
+      sys_write(STDOUT, "using ", 6);
+      for(i=0; i<LOOP/2; i++) asm("inb $0x80");
+      sys_write(STDOUT, "the ", 4);
+      for(i=0; i<LOOP/2; i++) asm("inb $0x80");
+      sys_write(STDOUT, "video... ", 9);
+      sys_sempost(STDOUT);                      // if commented out?
+      sys_sleep(centi_sec);                     // sleep PID x .5 sec
    }
 }
