@@ -110,9 +110,9 @@ void SemWaitService(int sem_num) {
 			video_sem--;	//downcount the semaphore value by one
 		} else {
 			//block the running process
-			EnQ(run_pid, &wait_q);	// 1. enqueue it to the wait queue in the semaphore
+			EnQ(run_pid, &video_sem.wait_q);	// 1. enqueue it to the wait queue in the semaphore
 			pcb[run_pid].state = WAIT;	// 2. change its state
-			run_pid=0;		// 3. no running process anymore (lack one)
+			run_pid=-1;		// 3. no running process anymore (lack one)
 		}
 	} else {
 		cons_printf("Kernel Panic: non-such semaphore number!");	
@@ -126,7 +126,7 @@ void SempostService(int sem_num) {
 			video_sem.value++;	//upcount the semaphore value by one	
 		} else {
 		// liberate a waiting process
-		DeQ(run_pid, &wait_q);	// 1. dequeue it from the wait queue in the semaphore
+		DeQ(run_pid, &video_sem.wait_q);	// 1. dequeue it from the wait queue in the semaphore
 		pcb[run_pid].state= READY;	// 2. change its state
 		EnQ(run_pid, &ready_pid_q);	// 3. enqueue the liberated PID to the ready PID queue
 		}
