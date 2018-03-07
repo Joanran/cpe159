@@ -154,7 +154,7 @@ void TermService(int which) {
          // str ends & there's a waiter
          // release the 1st waiter in the wait queue:
             DeQ(&dsp[i].dsp_wait_q);	//1. dequeue it from the wait queue
-            pcb[run_pid].state=READY;	//2. update its state
-            EnQ(run_pid, &ready_pid_q);	//3. enqueue it to ready PID queue
+            pcb[pid].state=READY;	//2. update its state
+            EnQ(pid, &ready_pid_q);	//3. enqueue it to ready PID queue
       }
    }
