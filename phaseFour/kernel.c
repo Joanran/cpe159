@@ -71,7 +71,8 @@ int main(void) {  // OS bootstraps
   	ProcScheduler();	//call ProcScheduler() to select a run_pid
   	ProcLoader(pcb[run_pid].trapframe_p);		//call ProcLoader() with address of the trapframe of the selected run_pid
 
-	
+	//new subroutine for phase four below
+	InitTerm();
 
    	return 0; // compiler needs for syntax altho this statement is never exec
 }
