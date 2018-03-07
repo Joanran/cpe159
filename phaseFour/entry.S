@@ -33,4 +33,8 @@ ENTRY(SyscallEntry)
 ENTRY(TimerEntry)
 	pushl $TIMER
 	jmp EnterKernel
-	
+
+//phase four stuff below
+ENTRY(Term1Entry)
+
+ENTRY(Term2Entry)
