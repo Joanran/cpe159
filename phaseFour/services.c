@@ -135,3 +135,24 @@ void SempostService(int sem_num) {
 	}
 
 }
+
+void TermService(int which) {
+      int i, pid;
+
+      if 1st character of dsp buffer is null, return; // nothing to dsp
+
+      outportb(term[which].port, term[which].dsp[0]); // disp 1st char
+
+      conduct a loop, one by one {:
+         move each character in dsp buffer forward by 1 character
+         if encounter moving a NULL character, break loop
+      }
+
+      if 1st char of dsp buffer is null and the wait queue has PID {
+         // str ends & there's a waiter
+         // release the 1st waiter in the wait queue:
+            1. dequeue it from the wait queue
+            2. update its state
+            3. enqueue it to ready PID queue
+      }
+   }
