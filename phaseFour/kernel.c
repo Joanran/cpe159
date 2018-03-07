@@ -50,16 +50,13 @@ void ProcScheduler(void) {              // choose run_pid to load/run
    if(run_pid >0){
 	return;
    }
-   if(ready_pid_q.size == 0){
-	run_pid=0;
-   }else{
+   if(ready_pid_q.size == 0){	// if the ready_pid_q is empty: 
+	run_pid=0;		//let run_pid be zero
+   }else{			 // else: get the 1st one in ready_pid_q to be run_pid
    	run_pid=DeQ(&ready_pid_q);
-  // if the ready_pid_q is empty: let run_pid be zero
-  // else: get the 1st one in ready_pid_q to be run_pid
-   	pcb[run_pid].totaltime = pcb[run_pid].totaltime + pcb[run_pid].runtime;
-  	pcb[run_pid].runtime= 0;
-   //accumulate its totaltime by adding its runtime
-   //and then reset its runtime to zero
+	//accumulate its totaltime by adding its runtime
+   	pcb[run_pid].totaltime = pcb[run_pid].totaltime + pcb[run_pid].runtime; 
+  	pcb[run_pid].runtime= 0;	 //and then reset its runtime to zero
    }
 }
 
@@ -86,7 +83,14 @@ void Kernel(trapframe_t *trapframe_p) {   // kernel code runs (100 times/second)
 			TimerService();
 			break;
 		case SYSCALL:	//128
-			SyscallService(trapframe_p); break;
+			SyscallService(trapframe_p); 
+			break;
+		case TERM1: 	//35
+			TermService(0);
+			break;
+		case TERM2:	//36
+			TermService(1);
+			break;
 	}
 
 
