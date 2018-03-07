@@ -46,3 +46,7 @@ void EnQ(int element, pid_q_t *p) {
    p->size++;	 //increment 'size' of the queue p points to by 1
 }
 
+void MyStrcpy(char *dst, char *src){ //used in WriteServices()
+		
+}
+
