@@ -39,4 +39,10 @@ typedef struct {             // generic queue type
       pid_q_t wait_q;           // waiting processes
    } semaphore_t;
 
+  typedef struct {             // phase4 Dev Drv I
+      char dsp[BUFF_SIZE];      // buffer for term output
+      pid_q_t dsp_wait_q;       // PID await for term output 
+      int port;                 // port data register
+   } term_t;
+
 #endif // _KERNEL_TYPES_H_
