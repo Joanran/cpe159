@@ -20,6 +20,8 @@ char proc_stack[PROC_NUM][PROC_STACK_SIZE]; // process runtime stacks
 semaphore_t video_sem;			// Phase 3
 term_t term[2];				//Phase 4
 
+
+
 void InitKernelData(void) {        // init kernel data
   	int i; //, ret;
 	run_pid=-1;	//initialize run_pid (to negative 1)
@@ -29,6 +31,10 @@ void InitKernelData(void) {        // init kernel data
 	for(i=0; i<PROC_NUM; i++) {
 		EnQ(i, &avail_pid_q );	//enqueue all PID numbers into the available PID queue
 	}
+	
+	term[0]=0x2f8;
+	term[1]=0x3e8;
+	MyBzero(&pcb[0], sizeof(pcb_t[20])); //first zero-ed it out
 }
 
 
