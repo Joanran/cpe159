@@ -36,5 +36,9 @@ ENTRY(TimerEntry)
 
 //phase four stuff below
 ENTRY(Term1Entry)
+	pushl $TERM1
+	jmp EnterKernel
 
 ENTRY(Term2Entry)
+	pushl $TERM2
+	jmp EnterKernel
