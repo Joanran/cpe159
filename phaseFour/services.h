@@ -13,8 +13,11 @@ void SleepService(int);
 void GetpidService(int *);
 void WriteService(int,char *,int);
 
-//new ones are below
+//phase three below
 void SemwaitService(int);
 void SempostService(int);
+
+//phase four below
+void TermService(int);
 
 #endif
