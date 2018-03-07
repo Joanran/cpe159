@@ -42,6 +42,10 @@ void InitKernelControl(void) {     // init kernel control
 	cons_printf("IDT located at DRAM addr %x (%d). \n", IDT_p, IDT_p );
 	fill_gate(&IDT_p[TIMER], (int)TimerEntry, get_cs(), ACC_INTR_GATE, 0);
 	fill_gate(&IDT_p[SYSCALL], (int)SyscallEntry, get_cs(), ACC_INTR_GATE, 0);
+	//phase four stuff below
+	fill_gate(&IDT_p[TERM1], (int)Term1Entry, get_cs(), ACC_INTR_GATE, 0);
+	fill_gate(&IDT_p[TERM2], (int)Term2Entry, get_cs(), ACC_INTR_GATE, 0);
+	
 	outportb(0x21, ~1);	//0x21 is PIC mask, ~1 is mask
 }
 
