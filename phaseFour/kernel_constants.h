@@ -20,4 +20,8 @@
 #define SYS_GETPID 20
 #define SYS_SLEEP 162
 
+#define TERM1 35          //interrupt and IDT entry numbers for the 1st terminal
+#define TERM2 36          //interrupt and IDT entry numbers for the 2nd terminal
+#define BUFF_SIZE 101     //the maximum bytes in each terminal I/O buffer
+
 #endif
