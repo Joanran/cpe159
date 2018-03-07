@@ -9,5 +9,7 @@ void EnQ(int, pid_q_t *);
 int DeQ(pid_q_t *);
 void MyBzero(char *, int);
 
+void MyStrcpy(char *, char *);
+
 #endif
 
