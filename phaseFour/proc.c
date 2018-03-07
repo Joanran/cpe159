@@ -28,7 +28,7 @@ void UserProc(void) {
       str[0] = '0' + my_pid/10;
       str[1] = '0' + my_pid%10;
 
-      which = (my_pid % 2)? TERM1 : TERM2;
+      which = (my_pid % 2)? TERM1 : TERM2; 
 
       while(1) {
          sys_write(which, str, 3);   // show my PID
