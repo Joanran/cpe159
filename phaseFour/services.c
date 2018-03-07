@@ -102,6 +102,25 @@ void WriteService(int fileno, char *str, int len) {
 
 		}
 	}
+	
+	//phase four stuff below
+	if(fileno==TERM1) { 	//if the fileno given is TERM1, use set which to 0
+		which=term[0];	//(use term[0])
+	}
+	
+	if(fileno==TERM2) {		//if TERM2, set which to 1 (use term[1]) for the following
+		which=term[1];
+	}			
+		//1. the 'str' is first copied to the terminal 'dsp' buffer
+   		
+		//2. and the running process is 'blocked' in the wait queue
+   		EnQ(run_pid, &term[1].dsp_wait_q);
+		pcb[run_pid].state=READY;
+		run_pid=-1;
+		//3. lastly, 'TermService(which)' is called (to start service)
+		TermService(which);
+		
+	
 }
 
 void SemWaitService(int sem_num) {
@@ -143,9 +162,9 @@ void TermService(int which) {
 
       outportb(term[which].port, term[which].dsp[0]); // disp 1st char
 
-     for(i=0; i<BUFF_SIZE; i++) {	// conduct a loop, one by one {:
+     for(i=0; i<BUFF_SIZE; i++) {	// conduct a loop, one by one {
          //move each character in dsp buffer forward by 1 character
-         if(dsp[i]=='\0') {//if encounter moving a NULL character, break loop
+         if(dsp[i]==NULL) {//if encounter moving a NULL character, break loop
 		break;
 	 }
       }
