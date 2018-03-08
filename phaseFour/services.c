@@ -162,17 +162,16 @@ void TermService(int which) {
       outportb(term[which].port, term[which].dsp[0]); // disp 1st char
 
      for(i=0; i<BUFF_SIZE; i++) {	// conduct a loop, one by one {
-         //move each character in dsp buffer forward by 1 character
-         if(term[which].dsp[i]=='\0') {//if encounter moving a NULL character, break loop
+         term[which].dsp[i]=term[which].dsp[i+1];	//move each character in dsp buffer forward by 1 character
+         if(term[which].dsp[i]=='\0') {	//if encounter moving a NULL character, break loop
 		break;
 	 }
       }
-
       if((term[which].dsp[0]=='\0') && (term[which].dsp_wait_q.size!= 0)) { //if 1st char of dsp buffer is null and the wait queue has PID
           //str ends & there's a waiter
          // release the 1st waiter in the wait queue:
-            DeQ(&term[which].dsp[i].dsp_wait_q);	//1. dequeue it from the wait queue
-            pcb[pid].state=READY;	//2. update its state
-            EnQ(pid, &ready_pid_q);	//3. enqueue it to ready PID queue
+            pid=DeQ(&term[which].dsp[i].dsp_wait_q);	//1. dequeue it from the wait queue
+            pcb[pid].state=READY;			//2. update its state
+            EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
       }
    }
