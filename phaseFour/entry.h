@@ -14,9 +14,11 @@ void TimerEntry(void);            // coded in entry.S, assembler won't like this
 void ProcLoader(trapframe_t *);   // coded in entry.S
 void SyscallEntry(void);
 
+void Term1Entry(void);
+void Term2Entry(void);
+
 __END_DECLS
 
 #endif // ifndef ASSEMBLER
 
 #endif // ifndef _ENTRY_H_
-
