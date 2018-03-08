@@ -14,5 +14,6 @@ extern char proc_stack[PROC_NUM][PROC_STACK_SIZE]; // process runtime stacks
 extern int current_time;
 extern semaphore_t video_sem;
 
+extern term_t term[2];
 
 #endif                              // endif of ifndef
