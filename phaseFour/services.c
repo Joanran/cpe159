@@ -161,7 +161,7 @@ void TermService(int which) {
 
       outportb(term[which].port, term[which].dsp[0]); // disp 1st char
 
-     for(i=0; i<BUFF_SIZE; i++) {	// conduct a loop, one by one {
+     for(i=0; i<BUFF_SIZE-1; i++) {	// conduct a loop, one by one {
          term[which].dsp[i]=term[which].dsp[i+1];	//move each character in dsp buffer forward by 1 character
          if(term[which].dsp[i]=='\0') {	//if encounter moving a NULL character, break loop
 		break;
