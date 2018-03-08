@@ -51,6 +51,7 @@ void InitKernelControl(void) {     // init kernel control
 	fill_gate(&IDT_p[TERM2], (int)Term2Entry, get_cs(), ACC_INTR_GATE, 0);
 	
 	outportb(0x21, ~1);	//0x21 is PIC mask, ~1 is mask
+	outportb();
 }
 
 void ProcScheduler(void) {              // choose run_pid to load/run
@@ -71,13 +72,11 @@ void ProcScheduler(void) {              // choose run_pid to load/run
 int main(void) {  // OS bootstraps
   	InitKernelData();	// initialize kernel data
   	InitKernelControl();	//initialize kernel control
+	InitTerm();		//new subroutine for phase four below
 
   	NewProcService(IdleProc); 	//call NewProcService() with address of IdleProc to create it
   	ProcScheduler();	//call ProcScheduler() to select a run_pid
   	ProcLoader(pcb[run_pid].trapframe_p);		//call ProcLoader() with address of the trapframe of the selected run_pid
-
-	//new subroutine for phase four below
-	InitTerm();
 
    	return 0; // compiler needs for syntax altho this statement is never exec
 }
