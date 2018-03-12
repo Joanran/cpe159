@@ -135,7 +135,7 @@ void SempostService(int sem_num) {
 			video_sem.val++;	//upcount the semaphore value by one	
 		} else {
 		// liberate a waiting process
-		DeQ(&video_sem.wait_q);	// 1. dequeue it from the wait queue in the semaphore
+		pid=DeQ(&video_sem.wait_q);	// 1. dequeue it from the wait queue in the semaphore
 		pcb[run_pid].state=READY;	// 2. change its state
 		EnQ(run_pid, &ready_pid_q);	// 3. enqueue the linerated PID to the ready PID queue
 		}
