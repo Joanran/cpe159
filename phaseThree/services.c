@@ -130,6 +130,7 @@ void SemWaitService(int sem_num) {
 }
 
 void SempostService(int sem_num) {
+	int pid;
 	if(sem_num==STDOUT) {
 		if(video_sem.wait_q.size==0) {	// if the wait queue of the video semaphore is empty
 			video_sem.val++;	//upcount the semaphore value by one	
