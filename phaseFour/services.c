@@ -69,11 +69,20 @@ void TimerService(void) {
 void SyscallService(trapframe_t *p) {
 	switch(p->eax) {	//switch on p->eax to call one of the 3 services below
 		case SYS_GETPID:	//20
-			GetpidService(&(p->ebx)); break;
+			GetpidService(&(p->ebx)); 
+			break;
 		case SYS_SLEEP:		//162
-			SleepService((int)p->ebx); break;
+			SleepService((int)p->ebx); 
+			break;
 		case SYS_WRITE:		//4
-			WriteService((int)p->ebx,(char *)(p->ecx), (int)p->edx); break;		
+			WriteService((int)p->ebx,(char *)(p->ecx), (int)p->edx); 
+			break;	
+		case SYS_SEMWAIT:	//300
+			SemWaitService((int)p->ebx);
+			break;
+		case SYS_SEMPOST:	//301
+			SempostService((int)p->ebx);
+			break;		
 	}	
 }
 
