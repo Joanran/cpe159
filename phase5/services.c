@@ -122,7 +122,7 @@ void WriteService(int fileno, char *str, int len) {
 		EnQ(run_pid, &term[0].dsp_wait_q); //2. and the running process is 'blocked' in the wait queue
 		pcb[run_pid].state=WAIT;
 		run_pid=-1;
-		TermService(0);	//(use term[0]) ////3. lastly, 'TermService(which)' is called (to start service)
+		DspService(0);	//(use term[0]) ////3. lastly, 'TermService(which)' is called (to start service)
 	}
 	
 	if(fileno==TERM2) {		//if TERM2, set which to 1 (use term[1]) for the following
@@ -130,7 +130,7 @@ void WriteService(int fileno, char *str, int len) {
    		EnQ(run_pid, &term[1].dsp_wait_q);	//2. and the running process is 'blocked' in the wait queue
 		pcb[run_pid].state=WAIT;
 		run_pid=-1;
-		TermService(1);	//3. lastly, 'TermService(which)' is called (to start service)
+		DspService(1);	//3. lastly, 'TermService(which)' is called (to start service)
 			 }
 }
 
@@ -167,7 +167,21 @@ void SempostService(int sem_num) {
 
 }
 
-void TermService(int which) {
+//phase 5
+
+void TermService(int which){
+	int sts;
+	
+	sts = inportb(term[which].status);
+	
+	if( sts == DSP_READY){
+		DspService(which);
+	} else if( sts == KB_READY){
+		KbService(which);
+	}
+}
+
+void DspService(int which) {
       int i, pid;
 
       if(term[which].dsp[0]=='\0') return;	//if 1st character of dsp buffer is null, return; // nothing to dsp
@@ -188,3 +202,25 @@ void TermService(int which) {
             EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
       }
    }
+
+void KbService(int which){
+	char ch;
+	
+	ch = inportb(term[which].port);
+	outportb(term[which].port,ch);   //eccho back
+	if( /* ch is not a char return*/){   //not sure how to check for this? A value within keyboard ascii range?
+		AppStr(ch, term[which].kb);    //tool yet to be written
+		return;
+	}
+	if( term[which].kb_wait_q > 0){
+		/*release it by deq from waitq, move into readq, change state. will code later, im really sleepy. to do: step 4 and 5 */
+	}
+}
+			
+	
+
+
+	
+	
+	
+	
