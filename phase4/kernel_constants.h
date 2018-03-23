@@ -20,4 +20,8 @@
 #define SYS_GETPID 20
 #define SYS_SLEEP 162
 
+#define TERM1 35
+#define TERM2 36
+#define UFF_SIZE 101
+
 #endif
