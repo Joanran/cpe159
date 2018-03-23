@@ -43,6 +43,9 @@ typedef struct {             // generic queue type
       char dsp[BUFF_SIZE];      // buffer for term output
       pid_q_t dsp_wait_q;       // PID await for term output 
       int port;                 // port data register
+      char kb[BUFF_SIZE];       // buffer what comes from term KB
+      pid_q_t kb_wait_q;        // PID awaits for term KB
+      int status;               // event type indicator
    } term_t;
 
 #endif // _KERNEL_TYPES_H_
