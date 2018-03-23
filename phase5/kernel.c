@@ -29,9 +29,10 @@ void InitKernelData(void) {        // init kernel data
 	MyBzero((char *)&term[0], sizeof(term_t)); //first zero-ed it out
 	MyBzero((char *)&term[1], sizeof(term_t)); //first zero-ed it out
 	
-	term[0].port=0x2f8;
-	term[1].port=0x3e8;
-	
+	//term[0].port=0x2f8;
+	//term[1].port=0x3e8;
+	term[0].status = 0x2f8 + IIR;   // intr indicator reg
+        term[1].status = 0x3e8 + IIR;
 
 	for(i=0; i<PROC_NUM; i++) {
 		EnQ(i, &avail_pid_q );	//enqueue all PID numbers into the available PID queue
