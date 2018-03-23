@@ -100,3 +100,23 @@ void Kernel(trapframe_t *trapframe_p) {   // kernel code runs (100 times/second)
 	ProcScheduler(); //call ProcScheduler() to select run_pid
 	ProcLoader(pcb[run_pid].trapframe_p);// given the trapframe_p of the run_pid to load/run it
 }
+
+void InitTerm(void){
+        int i, j;
+
+	for(j=0; j<2; j++) { // alter two terminals
+         // set baud, Control Format Control Register 7-E-1 (data-parity-stop bits)
+         // raise DTR, RTS of the serial port to start read/write
+		outportb(term[j].port + CFCR, CFCR_DLAB);             // CFCR_DLAB is 0x80
+		outportb(term[j].port + BAUDLO, LOBYTE(115200/9600)); // period of each of 9600 bauds
+		outportb(term[j].port + CFCR, CFCR_PEVEN | CFCR_PENAB | CFCR_7BITS);
+
+		outportb(term[j].port + IER, 0);
+		outportb(term[j].port + MCR, MCR_DTR|MCR_RTS|MCR_IENABLE);
+		outportb(term[j].port + IER, IER_ERXRDY|IER_ETXRDY);       // enable TX & RX intr
+
+         for(i=0;i<LOOP;i++) asm("inb $0x80");              // let term reset
+
+         inportb(term[j].port); // clean up buffer (extra key at PROCOMM screen)
+        }
+   }
