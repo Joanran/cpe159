@@ -30,6 +30,18 @@ void sys_write(int fileno, char *str, int len) {
        );
 }
 
+void sys_read(int fileno, char *str, int len) {
+   asm("movl %0, %%eax;      // send service #4 (SYS_WRITE) via eax
+        movl %1, %%ebx;      // send in fileno via ebx 
+        movl %2, %%ecx;       // send in str addr via ecx
+        movl %3, %%edx;       // send in str len via edx
+        int $128"	     // initiate service call, intr 128 (IDT entry 128)
+       :                    // no output
+       : "g" (SYS_WRITE), "g" (fileno), "g" ((int)str), "g" (len)	//"g"=read,"=g"=write 
+       : "eax", "ebx", "ecx", "edx"
+       );
+}
+
 void sys_sleep(int centi_sec) { // 1 centi-second is 1/100 of a second
    asm("movl %0, %%eax;           // service #162 (SYS_SLEEP)
         movl %1, %%ebx;           // send in centi-seconds via ebx
