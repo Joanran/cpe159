@@ -16,4 +16,8 @@ extern semaphore_t video_sem;
 
 extern term_t term[2];
 
+extern char kb[BUFF_SIZE];       // buffer what comes from term KB
+extern pid_q_t kb_wait_q;        // PID awaits for term KB
+extern int status;               // event type indicator
+
 #endif                              // endif of ifndef
