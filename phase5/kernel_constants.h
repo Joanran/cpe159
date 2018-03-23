@@ -24,4 +24,8 @@
 #define TERM2 36          //interrupt and IDT entry numbers for the 2nd terminal
 #define BUFF_SIZE 101     //the maximum bytes in each terminal I/O buffer
 
+#define SYS_READ 3           // read from term KB
+#define DSP_READY IIR_TXRDY  // term display ready
+#define KB_READY IIR_RXRDY   // term KB input arrives
+
 #endif
