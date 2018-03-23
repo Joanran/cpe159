@@ -22,6 +22,7 @@ void IdleProc(void) {
 void UserProc(void) {
       int my_pid, centi_sec, which=0;
       char str[] = "   ";
+      char cmd[BUFF_SIZE];
    
       my_pid = sys_getpid();
       centi_sec = 50 * my_pid;
@@ -36,12 +37,14 @@ void UserProc(void) {
       //which = (my_pid % 2)? TERM1 : TERM2; 
 
       while(1) {
-         sys_write(which, str, 3);   // show my PID
-         sys_write(which, "is ", 3);
-         sys_write(which, "using ", 6);
-         sys_write(which, "terminal", 8);
-         sys_write(which, "...\n\r", 5);
-
-         sys_sleep(centi_sec);        // sleep for .5 sec x PID
+         sys_write(which, "\n\r", 2);      // get a new line
+         sys_write(which, str, 3);         // to show my PID
+         sys_write(which, "enter ", 6);    // and other msgs
+         sys_write(which, "shell ", 6);
+         sys_write(which, "command: ", 9);
+         sys_read(which, cmd, BUFF_SIZE);  // here we read term KB
+         sys_write(which, "You've entered: ", 16);
+         sys_write(which, cmd, BUFF_SIZE); // verify what's read
+         sys_sleep(centi_sec);             // sleep for .5 sec x PID
       }
    }
