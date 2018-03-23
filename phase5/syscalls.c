@@ -19,6 +19,9 @@ int sys_getpid(void) {
 }
 
 void sys_write(int fileno, char *str, int len) {
+  /* if(len == 0){
+	   return 0;     ## am I allowed to mix normal C with asm?
+   }    */                  
    asm("movl %0, %%eax;      // send service #4 (SYS_WRITE) via eax
         movl %1, %%ebx;      // send in fileno via ebx (e.g., STDOUT)
         movl %2, %%ecx;       // send in str addr via ecx
