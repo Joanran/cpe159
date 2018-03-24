@@ -188,3 +188,18 @@ void TermService(int which) {
             EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
       }
    }
+
+void  ReadService(int which){
+	if(which==0) { //determine which term_t to use (from the given argument)
+		//"block" the running process to the terminal keyboard wait queue
+		EnQ(run_pid, &term[which].kb_wait_q);
+		pcb[run_pid].state=WAIT;
+		run_pid=-1;
+	} else if (which==1) { //determine which term_t to use (from the given argument)
+		//"block" the running process to the terminal keyboard wait queue
+		EnQ(run_pid, &term[which].kb_wait_q);
+		pcb[run_pid].state=WAIT;
+		run_pid=-1;
+	}
+}
+
