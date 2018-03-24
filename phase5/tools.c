@@ -5,6 +5,25 @@
 #include "kernel_data.h"
 
 
+char* MyStrAppend(char* str, char ch) {
+    while(*str){
+        str++;
+    }
+    *str = ch;
+    *str++ = '\0';
+    return str;
+}
+
+char* MyStrMove(char *str) {
+    char* temp = str;
+    while (*str) {
+	    temp++;
+	    *str = *temp;
+	    str++;
+    }
+    return str;
+}
+
 // clear DRAM by setting each byte to zero
 void MyBzero(char *p, int size) {
    int i;
