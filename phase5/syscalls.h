@@ -7,6 +7,7 @@
 
 int sys_getpid(void); 
 void sys_write(int, char *, int);
+void sys_read(int, char *, int);
 void sys_sleep(int);
 
 void sys_semwait(int);
