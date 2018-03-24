@@ -22,5 +22,7 @@ void TermService(int);
 
 //phase five below
 void ReadService(int);
+void DspService(int);
+void KbService(int);
 
 #endif
