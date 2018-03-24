@@ -122,7 +122,7 @@ void WriteService(int fileno, char *str, int len) {
 		EnQ(run_pid, &term[0].dsp_wait_q); //2. and the running process is 'blocked' in the wait queue
 		pcb[run_pid].state=WAIT;
 		run_pid=-1;
-		TermService(0);	//(use term[0]) ////3. lastly, 'TermService(which)' is called (to start service)
+		DspService(0);	//At the end of the WriteService(), change it to calling DspService()
 	}
 	
 	if(fileno==TERM2) {		//if TERM2, set which to 1 (use term[1]) for the following
@@ -130,7 +130,7 @@ void WriteService(int fileno, char *str, int len) {
    		EnQ(run_pid, &term[1].dsp_wait_q);	//2. and the running process is 'blocked' in the wait queue
 		pcb[run_pid].state=WAIT;
 		run_pid=-1;
-		TermService(1);	//3. lastly, 'TermService(which)' is called (to start service)
+		DspService(1);	// At the end of the WriteService(), change it to calling DspService()
 			 }
 }
 
@@ -167,7 +167,7 @@ void SempostService(int sem_num) {
 
 }
 
-void TermService(int which) {
+void DspService(int which) { //does the same work of the TermService of the previous phase
       int i, pid;
 
       if(term[which].dsp[0]=='\0') return;	//if 1st character of dsp buffer is null, return; // nothing to dsp
@@ -188,16 +188,6 @@ void TermService(int which) {
             pcb[pid].state=READY;			//2. update its state
             EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
       }
-	
-     	//phase five below
-  	ReadService(term[which].status); //1. read the 'status' of the port
-      	if (DSP_READY) { 		 //2. if it's DSP_READY, 
-		DspService();		 //call DspService()
-	}
-	
-	if(KB_READY) {		//3. if it's KB_READY,
-      		KbService();	//call KbService()
-	}
 
    }
 
@@ -215,3 +205,15 @@ void  ReadService(int which){
 	}
 }
 
+void TermService(){
+	//phase five below
+  	char ch =inportb(term[which].status);  //1. read the 'status' of the port
+      	if (ch==DSP_READY) { 		 //2. if it's DSP_READY, 
+		DspService();		 //call DspService()
+	}
+	
+	if(ch==KB_READY) {		//3. if it's KB_READY,
+      		KbService();	//call KbService()
+	}
+}	      
+	      
