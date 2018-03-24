@@ -180,6 +180,7 @@ void TermService(int which) {
 		break;
 	 }
       }
+	
       if((term[which].dsp[0]=='\0') && (term[which].dsp_wait_q.size!= 0)) { //if 1st char of dsp buffer is null and the wait queue has PID
           //str ends & there's a waiter
          // release the 1st waiter in the wait queue:
@@ -187,6 +188,17 @@ void TermService(int which) {
             pcb[pid].state=READY;			//2. update its state
             EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
       }
+	
+     	//phase five below
+  	ReadService(term[which].status); //1. read the 'status' of the port
+      	if (DSP_READY) { 		 //2. if it's DSP_READY, 
+		DspService();		 //call DspService()
+	}
+	
+	if(KB_READY) {		//3. if it's KB_READY,
+      		KbService();	//call KbService()
+	}
+
    }
 
 void  ReadService(int which){
