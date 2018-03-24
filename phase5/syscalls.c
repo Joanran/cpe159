@@ -40,7 +40,7 @@ void sys_read(int fileno, char *str, int len) {
         movl %3, %%edx;       // send in str len via edx
         int $128"	     // initiate service call, intr 128 (IDT entry 128)
        :                    // no output
-       : "g" (SYS_WRITE), "g" (fileno), "g" ((int)str), "g" (len)	//"g"=read,"=g"=write 
+       : "g" (SYS_READ), "g" (fileno), "g" ((int)str), "g" (len)	//"g"=read,"=g"=write 
        : "eax", "ebx", "ecx", "edx"
        );
 }
