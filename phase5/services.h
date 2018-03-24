@@ -20,4 +20,7 @@ void SempostService(int);
 //phase four below
 void TermService(int);
 
+//phase five below
+void ReadService(int);
+
 #endif
