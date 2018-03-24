@@ -11,5 +11,8 @@ void MyBzero(char *, int);
 
 void MyStrcpy(char *, char *);
 
+char* MyStrMove(char*);
+char* MyStrAppend(char*, char);
+
 #endif
 
