@@ -220,12 +220,13 @@ void TermService(int which){
 }
 	   
 void KbService(int which) {
-      int pid;
+      int pid; 
+      char *str;
       char ch=inportb(term[which].port);	//1. read a character from the 'port' of the terminal
       outportb(term[which].port, ch);	//2. also write it out via the 'port' of the terminal (to echo back)
 	//outportb(destination,character to write out), like mask
       if(ch != '\r') { //3. if what's read is NOT a '\r' (CR) key, 
-	=MyStrApp(ch, term[which].kb); //append it to kb[] string of the terminal (use tool)
+	str=MyStrApp(ch, term[which].kb); //append it to kb[] string of the terminal (use tool)
         return; //and just return
       }
 	
@@ -235,7 +236,7 @@ void KbService(int which) {
 	pid=DeQ(&term[which].kb_wait_q);	
         pcb[pid].state=READY;		
 	EnQ(pid, &ready_pid_q); 
-      	MyStrcpy(term[which].kb, );  //kb str it needs (use MyStrcpy)
+      	MyStrcpy(term[which].kb, str);  //kb str it needs (use MyStrcpy)
       }
       term[which].kb[0]=='\0'; //5. reset the terminal kb string (put a single NUL at its start)	
 }
