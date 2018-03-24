@@ -205,14 +205,38 @@ void  ReadService(int which){
 	}
 }
 
-void TermService(){
+void TermService(int which){
 	//phase five below
-      	if (DSP_READY==inportb(term[which].status) { 	 //1. read the 'status' of the port//2. if it's DSP_READY, 
-		DspService();		 //call DspService()
+	
+	char ch= inportb(term[which].status; //1. read the 'status' of the port
+			 
+      	if (ch==DSP_READY) { 	//2. if it's DSP_READY, 
+		DspService(which);		 //call DspService()
 	}
 	
-	if(KB_READY==inportb(term[which].status) {	//1. read the 'status' of the port //3. if it's KB_READY,
-      		KbService();	//call KbService()
+	if(ch==KB_READY) {	//3. if it's KB_READY,
+      		KbService(which);	//call KbService()
 	}
-}	      
-	      
+}
+	   
+void KbService(int which) {
+      int pid;
+      char ch=inportb(term[which].port);	//1. read a character from the 'port' of the terminal
+      outportb(term[which].port, ch);	//2. also write it out via the 'port' of the terminal (to echo back)
+	//outportb(destination,character to write out), like mask
+      if(ch != '\r') { //3. if what's read is NOT a '\r' (CR) key, 
+	=MyStrApp(ch, term[which].kb); //append it to kb[] string of the terminal (use tool)
+        return; //and just return
+      }
+	
+      //4. (not returning, continue) if there appears a waiting process in the kb wait queue of the terminal,	
+      if(term[which].kb_wait_q.size > 0) {	 
+       //release it 
+	pid=DeQ(&term[which].kb_wait_q);	
+        pcb[pid].state=READY;		
+	EnQ(pid, &ready_pid_q); 
+      	MyStrcpy(term[which].kb, );  //kb str it needs (use MyStrcpy)
+      }
+      term[which].kb[0]=='\0'; //5. reset the terminal kb string (put a single NUL at its start)	
+}
+	   
