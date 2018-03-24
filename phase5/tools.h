@@ -5,6 +5,8 @@
 
 #include "kernel_types.h" // need definition of 'pid_q_t' below
 
+void MyStrMove(char*);
+void MyStrAppend(char*, char);
 void EnQ(int, pid_q_t *);
 int DeQ(pid_q_t *);
 void MyBzero(char *, int);
