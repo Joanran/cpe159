@@ -226,7 +226,7 @@ void KbService(int which) {
       outportb(term[which].port, ch);	//2. also write it out via the 'port' of the terminal (to echo back)
 	//outportb(destination,character to write out), like mask
       if(ch != '\r') { //3. if what's read is NOT a '\r' (CR) key, 
-	str=MyStrApp(ch, term[which].kb); //append it to kb[] string of the terminal (use tool)
+	str=MyStrApp(term[which].kb, ch); //append it to kb[] string of the terminal (use tool)
         return; //and just return
       }
 	
