@@ -208,7 +208,7 @@ void  ReadService(int which){
 void TermService(int which){
 	//phase five below
 	
-	char ch= inportb(term[which].status; //1. read the 'status' of the port
+	char ch= inportb(term[which].status); //1. read the 'status' of the port
 			 
       	if (ch==DSP_READY) { 	//2. if it's DSP_READY, 
 		DspService(which);		 //call DspService()
