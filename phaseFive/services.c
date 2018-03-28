@@ -100,10 +100,8 @@ void SleepService(int centi_sec) {
 }
 
 void WriteService(int fileno, char *str, int len) {
-	int i;
+	int i, which;
 	static unsigned short *vga_p=(unsigned short *)0xb8000;	//top-left of screen
-
-
 
 	if(fileno==STDOUT) {
 		for(i=0; i<len; i++) { 			//for each char in str {
@@ -116,25 +114,21 @@ void WriteService(int fileno, char *str, int len) {
 			}
 
 		}
-	}
-	
-	//phase four stuff below
-	
-	if(fileno==TERM1) { 	//if the fileno given is TERM1, use set which to 0
-		MyStrcpy(term[0].dsp, str);		//1. the 'str' is first copied to the terminal 'dsp' buffer
-		EnQ(run_pid, &term[0].dsp_wait_q); //2. and the running process is 'blocked' in the wait queue
+	} else if(fileno==TERM1) { 	//if the fileno given is TERM1, use set which to 0
+		which=0;
+		MyStrcpy(term[which].dsp, str);		//1. the 'str' is first copied to the terminal 'dsp' buffer
+		EnQ(run_pid, &term[which].dsp_wait_q); //2. and the running process is 'blocked' in the wait queue
 		pcb[run_pid].state=WAIT;
 		run_pid=-1;
-		DspService(0);	//At the end of the WriteService(), change it to calling DspService()
-	}
-	
-	if(fileno==TERM2) {		//if TERM2, set which to 1 (use term[1]) for the following
-		MyStrcpy(term[1].dsp, str);		//1. the 'str' is first copied to the terminal 'dsp' buffer
-   		EnQ(run_pid, &term[1].dsp_wait_q);	//2. and the running process is 'blocked' in the wait queue
+		TermService(which);	//(use term[0]) ////3. lastly, 'TermService(which)' is called (to start service)
+	} else if(fileno==TERM2) {		//if TERM2, set which to 1 (use term[1]) for the following
+		which=1;
+		MyStrcpy(term[which].dsp, str);		//1. the 'str' is first copied to the terminal 'dsp' buffer
+   		EnQ(run_pid, &term[which].dsp_wait_q);	//2. and the running process is 'blocked' in the wait queue
 		pcb[run_pid].state=WAIT;
 		run_pid=-1;
-		DspService(1);	// At the end of the WriteService(), change it to calling DspService()
-			 }
+		TermService(which);	//3. lastly, 'TermService(which)' is called (to start service)
+	}
 }
 
 void SemWaitService(int sem_num) {
@@ -177,7 +171,7 @@ void DspService(int which) { //does the same work of the TermService of the prev
 
       outportb(term[which].port, term[which].dsp[0]); // disp 1st char
 
-     for(i=0; i<BUFF_SIZE; i++) {	// conduct a loop, one by one {
+     for(i=0; i<BUFF_SIZE-1; i++) {	// conduct a loop, one by one {
          term[which].dsp[i]=term[which].dsp[i+1];	//move each character in dsp buffer forward by 1 character
          if(term[which].dsp[i]=='\0') {	//if encounter moving a NULL character, break loop
 		break;
