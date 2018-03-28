@@ -47,7 +47,8 @@ void EnQ(int element, pid_q_t *p) {
 }
 
 void MyStrcpy(char *dst, char *src){ //used in WriteServices()
-	while(*src) {  
+	while(*src != '\0') {  
 		*dst++ = *src++;
+		*dst='\0';
 	}
 }
