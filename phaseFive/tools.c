@@ -10,6 +10,7 @@ char* MyStrAppend(char* str, char ch) {
         str++;
     }
     *str = ch;
+    *str = '\0';
     return str;
 }
 
