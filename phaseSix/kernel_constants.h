@@ -28,4 +28,6 @@
 #define DSP_READY IIR_TXRDY  // term display ready
 #define KB_READY IIR_RXRDY   // term KB input arrives
 
+#define SYS_FORK 2
+
 #endif
