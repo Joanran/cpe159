@@ -38,7 +38,7 @@ void ChildStuff(int which) {  // which terminal to display msg
 }
 
 void UserProc(void) {
-      int my_pid, centi_sec, which, pid;
+      int my_pid, centi_sec, which, cpid;
       char str[] = "   ";
       char cmd[BUFF_SIZE];
    
@@ -62,20 +62,25 @@ void UserProc(void) {
          sys_write(which, "command: ", 9);
          sys_read(which, cmd, BUFF_SIZE);  // here we read term KB
       	 if((MyStrcmp()) == 0) { //use MyStrcmp() to check if 'cmd' matches "fork"
-	 	pid=sys_fork();	//1. call for the fork syscall which returns a pid
-         	if(pid==-1) {	//2. if the pid is:
+	 	cpid=sys_fork();	//1. call for the fork syscall which returns a pid
+         	if(cpid==-1) {	//2. if the pid is:
             		//a. -1, show error message (OS failed to fork)
 			sys_write(which, "\n\r", 2);      // get a new line
          		sys_write(which, "OS ", 3);    // and other msgs
          		sys_write(which, "failed ", 7);
          		sys_write(which, "to ", 9);
 			sys_write(which, "fork ", 9);
-		} else if (pid==0) {	//b. 0, child process created, let it call ChildStuff(which)
+		} else if (cpid==0) {	//b. 0, child process created, let it call ChildStuff(which)
 			ChildStuff(which);
-		} else if(pid > 0) { 	//c. >0, build a str from pid and show it (see demo for exact content)
-			str[0] = '0' + pid/10;
-      			str[1] = '0' + pid%10;
-			sys_write(which, str, 3);      
+		} else if(cpid > 0) { 	//c. >0, build a str from pid and show it (see demo for exact content), parent continues
+			str[0] = '0' + cpid/10;
+      			str[1] = '0' + cpid%10;
+			sys_write(which, "\n\r", 2);      // get a new line
+        		sys_write(which, str, 3);         // to show my PID
+         		sys_write(which, "i'm ", 4);    // and other msgs
+         		sys_write(which, "the ", 4);
+         		sys_write(which, "child ", 6);
+         		sys_sleep(centi_sec);	//b. and sleep for the period of time     
 		}
 	 }
       }
