@@ -4,7 +4,7 @@
 #define _SYSCALLS_H_
 
 #include "kernel_constants.h"
-
+int sys_fork(void);
 int sys_getpid(void); 
 void sys_write(int, char *, int);
 void sys_read(int, char *, int);
