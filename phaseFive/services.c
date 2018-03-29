@@ -100,7 +100,7 @@ void SleepService(int centi_sec) {
 }
 
 void WriteService(int fileno, char *str, int len) {
-	int i;
+	int i, which;
 	static unsigned short *vga_p=(unsigned short *)0xb8000;	//top-left of screen
 
 
@@ -116,11 +116,22 @@ void WriteService(int fileno, char *str, int len) {
 			}
 
 		}
+		return;
+	} 
+	
+	if (fileno==TERM1) {
+		which=0;	
+	} else if (fileno==TERM2) {
+		which=1;
 	}
 	
-	//phase four stuff below
+	MyStrcpy(term[which].dsp, str);		//1. the 'str' is first copied to the terminal 'dsp' buffer
+	EnQ(run_pid, &term[which].dsp_wait_q); //2. and the running process is 'blocked' in the wait queue
+	pcb[run_pid].state=WAIT;
+	run_pid=-1;
+	DspService(which);	//At the end of the WriteService(), change it to calling DspService()
 	
-	if(fileno==TERM1) { 	//if the fileno given is TERM1, use set which to 0
+	/* if(fileno==TERM1) { 	//if the fileno given is TERM1, use set which to 0
 		MyStrcpy(term[0].dsp, str);		//1. the 'str' is first copied to the terminal 'dsp' buffer
 		EnQ(run_pid, &term[0].dsp_wait_q); //2. and the running process is 'blocked' in the wait queue
 		pcb[run_pid].state=WAIT;
@@ -134,7 +145,9 @@ void WriteService(int fileno, char *str, int len) {
 		pcb[run_pid].state=WAIT;
 		run_pid=-1;
 		DspService(1);	// At the end of the WriteService(), change it to calling DspService()
-			 }
+			 } */
+	
+	
 }
 
 void SemWaitService(int sem_num) {
@@ -177,7 +190,7 @@ void DspService(int which) { //does the same work of the TermService of the prev
 
       outportb(term[which].port, term[which].dsp[0]); // disp 1st char
 
-     for(i=0; i<BUFF_SIZE; i++) {	// conduct a loop, one by one {
+     for(i=0; i<BUFF_SIZE-1; i++) {	// conduct a loop, one by one {
          term[which].dsp[i]=term[which].dsp[i+1];	//move each character in dsp buffer forward by 1 character
          if(term[which].dsp[i]=='\0') {	//if encounter moving a NULL character, break loop
 		break;
