@@ -11,6 +11,9 @@ void MyBzero(char *, int);
 
 void MyStrcpy(char *, char *);
 
+int MyStrcmp(char *s1, char*s2);
+void MyMemcpy(char *dst, char *src, int bytes);
+
 char* MyStrMove(char*);
 char* MyStrAppend(char*, char);
 
