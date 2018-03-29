@@ -25,4 +25,7 @@ void ReadService(int,char *,int);
 void DspService(int);
 void KbService(int);
 
+//phase six below
+void ForkService(int *)
+
 #endif
