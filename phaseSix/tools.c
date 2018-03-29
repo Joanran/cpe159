@@ -5,6 +5,22 @@
 #include "kernel_data.h"
 
 
+int MyStrcmp(char *s1, char *s2) {
+	 while (*s1 == *s2) {
+	    if (*s1 == '\0') break;
+	    s1++;
+	    s2++;
+	}
+	return ((*s1 == *s2) && *s1 == '\0');
+}
+
+void MyMemcpy(char *dst, char *src, int bytes) {
+	int i;
+	for (i = 0; i < bytes; i++){
+		dst[i] = src[i];
+	}
+}
+
 char* MyStrAppend(char* str, char ch) {
     while(*str){
         str++;
