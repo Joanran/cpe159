@@ -30,9 +30,9 @@ void ChildStuff(int which) {  // which terminal to display msg
          //a. show the msg (see demo for exact content, use multiple sys_write() calls)
 	 sys_write(which, "\n\r", 2);      // get a new line
          sys_write(which, str, 3);         // to show my PID
-         sys_write(which, "i'm ", 6);    // and other msgs
-         sys_write(which, "the ", 6);
-         sys_write(which, "child ", 9);
+         sys_write(which, "i'm ", 4);    // and other msgs
+         sys_write(which, "the ", 4);
+         sys_write(which, "child ", 6);
          sys_sleep(centi_sec);	//b. and sleep for the period of time
       }
 }
@@ -61,8 +61,25 @@ void UserProc(void) {
          sys_write(which, "shell ", 6);
          sys_write(which, "command: ", 9);
          sys_read(which, cmd, BUFF_SIZE);  // here we read term KB
-         sys_write(which, "You've entered: ", 16);
-         sys_write(which, cmd, BUFF_SIZE); // verify what's read
-         sys_sleep(centi_sec);             // sleep for .5 sec x PID
+         //sys_write(which, "You've entered: ", 16);
+         //sys_write(which, cmd, BUFF_SIZE); // verify what's read
+         //sys_sleep(centi_sec);             // sleep for .5 sec x PID
+      	 if((MyStrcmp()) == 0) { //use MyStrcmp() to check if 'cmd' matches "fork"
+	 	sys_fork();	//1. call for the fork syscall which returns a pid
+         	if(pid==-1) {	//2. if the pid is:
+            		//a. -1, show error message (OS failed to fork)
+			sys_write(which, "\n\r", 2);      // get a new line
+         		sys_write(which, "OS ", 3);    // and other msgs
+         		sys_write(which, "failed ", 7);
+         		sys_write(which, "to ", 9);
+			sys_write(which, "fork ", 9);
+		} else if (my_pid==0) {	//b. 0, child process created, let it call ChildStuff(which)
+			ChildStuff(which);
+		} else if(pid > 0) { 	//c. >0, build a str from pid and show it (see demo for exact content)
+			str[0] = '0' + my_pid/10;
+      			str[1] = '0' + my_pid%10;
+			sys_write(which, str, 3);      
+		}
+	 }
       }
    }
