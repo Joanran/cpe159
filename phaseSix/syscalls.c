@@ -4,6 +4,17 @@
 #include "kernel_constants.h" // SYS_WRITE 4, SYS_GETPID 20, etc.
 #include "services.h"
 
+int sys_fork(void){
+	int pid;
+	asm("movl %1, %%eax;
+	    int $128;
+	    movl %%ebx, %0"
+	    : "=g" (pid);
+	    : "g" (SYS_FORK);
+	    : "eax", "ebx"
+	    );
+}
+
 int sys_getpid(void) {
    int pid;
 
