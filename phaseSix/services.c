@@ -243,4 +243,31 @@ void KbService(int which) {
       }
       term[which].kb[0] = '\0'; //5. reset the terminal kb string (put a single NUL at its start)	
 }
+
+void ForkService(int *ebx_p) {
+
+	if (avail_pid_q.size == 0) {
+		*ebx_p = -1;
+		cons_printf("Cannot Create Child! No More Process!\r\n");
+		return;
+	}
+	
+	*ebx_p = DeQ(&avail_pid_q);
+	EnQ(*ebx_p, &ready_pid_q);
+	
+	MyBzero(pcb[*ebx_p], sizeof(pcb_t));
+	pcb[*ebx_p].state = "RUN";
+	pcb[*ebx_p].ppid = run_pid;
+	
+	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
+	
+	pcb[*ebx_p].trapframe_p.ebx = 0;
+	
+	uint8_t delta = &proc_stack[*ebx_p][0] - &proc_stack[run_pid][0];
+	
+	pcb[*ebx_p].trapframe_p.esp = delta;
+	pcb[*ebx_p].trapframe_p.ebp;
+	
+	
+}
 	   
