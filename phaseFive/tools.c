@@ -68,6 +68,6 @@ void MyStrcpy(char *dst, char *src){ //used in WriteServices()
 	while(*src) {  
 		*dst++ = *src++;
 	}
-	*dsc='\0'; 
+	*dst='\0'; 
 	
 }
