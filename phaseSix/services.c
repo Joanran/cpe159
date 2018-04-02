@@ -277,9 +277,11 @@ void ForkService(int *ebx_p) {
 	pcb[*ebx_p].trapframe_p.esi = delta;
 	pcb[*ebx_p].trapframe_p.edi = delta;
 	
-	int *p = ebp;
+	int *p;
+	p = ebp;
 	while (*p != 0) {
-		uint8_t adjustedAddy = 	
+		*p = *p - delta;
+		p = (int *) *p;
 	}
 	
 	
