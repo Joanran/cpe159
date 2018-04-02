@@ -68,6 +68,9 @@ void TimerService(void) {
 
 void SyscallService(trapframe_t *p) {
 	switch(p->eax) {	//switch on p->eax to call one of the 3 services below
+		case SYS_FORK:
+			ForkService(&(p->ebx));
+			break;
 		case SYS_GETPID:	//20
 			GetpidService(&(p->ebx)); 
 			break;
@@ -252,21 +255,32 @@ void ForkService(int *ebx_p) {
 		return;
 	}
 	
-	*ebx_p = DeQ(&avail_pid_q);
-	EnQ(*ebx_p, &ready_pid_q);
+	*ebx_p = DeQ(&avail_pid_q); // get a new child PID (set as what ebx_p points to)
+	EnQ(*ebx_p, &ready_pid_q);  // enqueue the PID to be ready to run
 	
 	MyBzero(pcb[*ebx_p], sizeof(pcb_t));
-	pcb[*ebx_p].state = "RUN";
+	pcb[*ebx_p].state = RUN;
 	pcb[*ebx_p].ppid = run_pid;
 	
+	// Need to check this line of code...
+	// 
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
-	
+	// Changing the trapframe_p is not included in the HINTS
+	// but it he says to do it in the html. 
+	pcb[*ebx_p].trapframe_p = (trapframe_t *)&proc_stack[*ebx_p][PROC_STACK_SIZE - sizeof(trapframe_t)]; 
 	pcb[*ebx_p].trapframe_p.ebx = 0;
 	
 	uint8_t delta = &proc_stack[*ebx_p][0] - &proc_stack[run_pid][0];
 	
 	pcb[*ebx_p].trapframe_p.esp = delta;
-	pcb[*ebx_p].trapframe_p.ebp;
+	pcb[*ebx_p].trapframe_p.ebp = delta;
+	pcb[*ebx_p].trapframe_p.esi = delta;
+	pcb[*ebx_p].trapframe_p.edi = delta;
+	
+	int *p = ebp;
+	while (*p != 0) {
+		uint8_t adjustedAddy = 	
+	}
 	
 	
 }
