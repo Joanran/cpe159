@@ -13,6 +13,7 @@ int sys_fork(void){
 	    : "g" (SYS_FORK);
 	    : "eax", "ebx"
 	    );
+	return pid;
 }
 
 int sys_getpid(void) {
