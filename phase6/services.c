@@ -227,12 +227,11 @@ void TermService(int which){
 	   
 void KbService(int which) {
       int pid; 
-      char *str;
       char ch=inportb(term[which].port);	//1. read a character from the 'port' of the terminal
       outportb(term[which].port, ch);	//2. also write it out via the 'port' of the terminal (to echo back)
 	//outportb(destination,character to write out), like mask
       if(ch != '\r') { //3. if what's read is NOT a '\r' (CR) key, 
-	str = MyStrAppend(term[which].kb, ch); //append it to kb[] string of the terminal (use tool)
+	MyStrAppend(term[which].kb, ch); //append it to kb[] string of the terminal (use tool)
         return; //and just return
       }
 
