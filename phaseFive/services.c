@@ -229,9 +229,11 @@ void KbService(int which) {
       outportb(term[which].port, ch);	//2. also write it out via the 'port' of the terminal (to echo back)
 	//outportb(destination,character to write out), like mask
       if(ch != '\r') { //3. if what's read is NOT a '\r' (CR) key, 
-	str = MyStrAppend(term[which].kb, ch); //append it to kb[] string of the terminal (use tool)
+	MyStrAppend(term[which].kb, ch); //append it to kb[] string of the terminal (use tool)
         return; //and just return
       }
+	
+      outportb(term[which].port, '\n');	//echos back new line
 	
       //4. (not returning, continue) if there appears a waiting process in the kb wait queue of the terminal,	
       if(term[which].kb_wait_q.size > 0) {	 
