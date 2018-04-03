@@ -235,6 +235,8 @@ void KbService(int which) {
 	str = MyStrAppend(term[which].kb, ch); //append it to kb[] string of the terminal (use tool)
         return; //and just return
       }
+
+       outportb(term[which].port, '\n');	//echos back new line
 	
       //4. (not returning, continue) if there appears a waiting process in the kb wait queue of the terminal,	
       if(term[which].kb_wait_q.size > 0) {	 
