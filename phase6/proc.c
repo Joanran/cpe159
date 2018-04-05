@@ -32,9 +32,10 @@ void ChildStuff(int which) {  // which terminal to display msg
          //a. show the msg (see demo for exact content, use multiple sys_write() calls)
 	 sys_write(which, "\n\r", 2);      // get a new line
          sys_write(which, str, 3);         // to show my PID
-         sys_write(which, "i'm ", 4);    // and other msgs
+         sys_write(which, "I'm ", 4);    // and other msgs
          sys_write(which, "the ", 4);
-         sys_write(which, "child ", 6);
+         sys_write(which, "child, ", 7);
+         sys_write(which, "PID", 3);
          sys_sleep(centi_sec);	//b. and sleep for the period of time
       }
 }
@@ -46,7 +47,6 @@ void UserProc(void) {
       char cmd[BUFF_SIZE];
    
       my_pid = sys_getpid();
-      centi_sec = 50 * my_pid;
       str[0] = '0' + my_pid/10;
       str[1] = '0' + my_pid%10;
 
