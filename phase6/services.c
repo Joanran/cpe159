@@ -272,7 +272,7 @@ void ForkService(int *ebx_p) {
 	// but it he says to do it in the html. 
 	delta = &proc_stack[*ebx_p][0] - &proc_stack[run_pid][0];
 	
-	pcb[*ebx_p].trapframe_p = (trapframe_p *)(&pcb[run_pid].trapframe_p+delta); 
+	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
 	pcb[*ebx_p].trapframe_p->ebx = 0;
 	
 	pcb[*ebx_p].trapframe_p->esp += delta;
