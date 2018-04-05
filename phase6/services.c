@@ -270,18 +270,19 @@ void ForkService(int *ebx_p) {
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
 	// Changing the trapframe_p is not included in the HINTS
 	// but it he says to do it in the html. 
-	pcb[*ebx_p].trapframe_p = (trapframe_t *)&proc_stack[*ebx_p][PROC_STACK_SIZE - sizeof(trapframe_t)]; 
-	pcb[*ebx_p].trapframe_p->ebx = 0;
 	delta = &proc_stack[*ebx_p][0] - &proc_stack[run_pid][0];
 	
-	pcb[*ebx_p].trapframe_p->esp -= delta;
-	pcb[*ebx_p].trapframe_p->ebp -= delta;
-	pcb[*ebx_p].trapframe_p->esi -= delta;
-	pcb[*ebx_p].trapframe_p->edi -= delta;
+	pcb[*ebx_p].trapframe_p = (trapframe_p *)(&pcb[run_pid].trapframe_p+delta); 
+	pcb[*ebx_p].trapframe_p->ebx = 0;
+	
+	pcb[*ebx_p].trapframe_p->esp += delta;
+	pcb[*ebx_p].trapframe_p->ebp += delta;
+	pcb[*ebx_p].trapframe_p->esi += delta;
+	pcb[*ebx_p].trapframe_p->edi += delta;
 	
 	p = pcb[*ebx_p].trapframe_p->ebp;
-	while (*p != 0) {
-		*p = *p - delta;
+	while (*p) {
+		*p += delta;
 		p = (int *) *p;
 	}
 }
