@@ -28,14 +28,20 @@ void ChildStuff(int which) {  // which terminal to display msg
       str[0] = '0' + my_pid/10;
       str[1] = '0' + my_pid%10;
 	
+      if ((my_pid%2) == 0 ) {
+	which = TERM2;
+      } else {
+	which = TERM1;
+      }
+	
       while(1) {	//4. loop forever:
          //a. show the msg (see demo for exact content, use multiple sys_write() calls)
 	 sys_write(which, "\n\r", 2);      // get a new line
-         sys_write(which, str, 3);         // to show my PID
          sys_write(which, "I'm ", 4);    // and other msgs
          sys_write(which, "the ", 4);
          sys_write(which, "child, ", 7);
          sys_write(which, "PID", 3);
+	 sys_write(which, str, 3);         // to show my PID
          sys_sleep(centi_sec);	//b. and sleep for the period of time
       }
 }
@@ -43,7 +49,6 @@ void ChildStuff(int which) {  // which terminal to display msg
 void UserProc(void) {
       int my_pid, centi_sec, which, cpid;
       char str[] = "   ";
-      char str2[] = "   ";
       char cmd[BUFF_SIZE];
    
       my_pid = sys_getpid();
@@ -65,10 +70,6 @@ void UserProc(void) {
          sys_write(which, "command: ", 9);
          sys_read(which, cmd, BUFF_SIZE);  // here we read term KB
 	      
-	 sys_write(which, "You've entered: ", 16);
-         sys_write(which, cmd, BUFF_SIZE);   
-	      
-	      
       	 if(MyStrcmp(cmd, "fork")) { //use MyStrcmp() to check if 'cmd' matches "fork"
 	 	cpid=sys_fork();	//1. call for the fork syscall which returns a pid
          	if(cpid==-1) {	//2. if the pid is:
@@ -81,11 +82,14 @@ void UserProc(void) {
 		} else if (cpid==0) {	//b. 0, child process created, let it call ChildStuff(which)
 			ChildStuff(which);
 		} else if(cpid > 0) { 	//c. >0, build a str from pid and show it (see demo for exact content), parent continues
-			str2[0] = '0' + cpid/10;
-      			str2[1] = '0' + cpid%10;
+			str[0] = '0' + cpid/10;
+      			str[1] = '0' + cpid%10;
          		sys_write(which, "\n\rUser Proc: forked ", 20);
 			sys_write(which, str2, 3);    
 		}
 	 }
       }
+	 sys_write(which, "You've entered: ", 16);
+         sys_write(which, cmd, BUFF_SIZE); // verify what's read
+         sys_sleep(centi_sec);             // sleep for .5 sec x PID
    }
