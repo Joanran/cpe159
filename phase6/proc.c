@@ -71,6 +71,10 @@ void UserProc(void) {
          sys_write(which, "command: ", 9);
          sys_read(which, cmd, BUFF_SIZE);  // here we read term KB
 	      
+	 sys_write(which, "You've entered: ", 16);
+         sys_write(which, cmd, BUFF_SIZE); // verify what's read
+         sys_sleep(centi_sec);             // sleep for .5 sec x PID
+	      
       	 if(MyStrcmp(cmd, "fork")) { //use MyStrcmp() to check if 'cmd' matches "fork"
 	 	cpid=sys_fork();	//1. call for the fork syscall which returns a pid
          	if(cpid==-1) {	//2. if the pid is:
@@ -90,7 +94,5 @@ void UserProc(void) {
 		}
 	 }
       }
-	 sys_write(which, "You've entered: ", 16);
-         sys_write(which, cmd, BUFF_SIZE); // verify what's read
-         sys_sleep(centi_sec);             // sleep for .5 sec x PID
+	
    }
