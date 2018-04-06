@@ -85,7 +85,7 @@ void UserProc(void) {
 			str[0] = '0' + cpid/10;
       			str[1] = '0' + cpid%10;
          		sys_write(which, "\n\rUser Proc: forked ", 20);
-			sys_write(which, str2, 3);    
+			sys_write(which, str, 3);    
 		}
 	 }
       }
