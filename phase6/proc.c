@@ -52,6 +52,7 @@ void UserProc(void) {
       char cmd[BUFF_SIZE];
    
       my_pid = sys_getpid();
+      centi_sec = 50 * my_pid;
       str[0] = '0' + my_pid/10;
       str[1] = '0' + my_pid%10;
 
