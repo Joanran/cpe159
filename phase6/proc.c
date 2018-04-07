@@ -49,6 +49,7 @@ void ChildStuff(int which) {  // which terminal to display msg
 void UserProc(void) {
       int my_pid, centi_sec, which, cpid;
       char str[] = "   ";
+      char str2[] = "   ";
       char cmd[BUFF_SIZE];
    
       my_pid = sys_getpid();
@@ -87,10 +88,10 @@ void UserProc(void) {
 		} else if (cpid==0) {	//b. 0, child process created, let it call ChildStuff(which)
 			ChildStuff(which);
 		} else if(cpid > 0) { 	//c. >0, build a str from pid and show it (see demo for exact content), parent continues
-			str[0] = '0' + cpid/10;
-      			str[1] = '0' + cpid%10;
+			str2[0] = '0' + cpid/10;
+      			str2[1] = '0' + cpid%10;
          		sys_write(which, "\n\rUser Proc: forked ", 20);
-			sys_write(which, str, 3);    
+			sys_write(which, str2, 3);    
 		}
 	 }
       }
