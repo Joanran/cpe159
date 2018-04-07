@@ -36,7 +36,8 @@ void ChildStuff(int which) {  // which terminal to display msg
 	
       while(1) {	//4. loop forever:
          //a. show the msg (see demo for exact content, use multiple sys_write() calls)
-	 sys_write(which, "\n\r", 2);      // get a new line
+	 sys_write(which, "\n", 1);      // get a new line
+	 sys_write(which, "\r", 1);	// carriage return...
          sys_write(which, "I'm ", 4);    // and other msgs
          sys_write(which, "the ", 4);
          sys_write(which, "child, ", 7);
