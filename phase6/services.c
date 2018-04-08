@@ -268,12 +268,8 @@ void ForkService(int *ebx_p) {
 	pcb[*ebx_p].state = RUN;
 	pcb[*ebx_p].ppid = run_pid;
 	
-	// Need to check this line of code...
-	// 
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
-	// Changing the trapframe_p is not included in the HINTS
-	// but it he says to do it in the html. 
-	delta = &proc_stack[*ebx_p][0] - &proc_stack[run_pid][0];
+	delta = proc_stack[*ebx_p] - proc_stack[run_pid];
 	
 	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
 	pcb[*ebx_p].trapframe_p->ebx = 0;
