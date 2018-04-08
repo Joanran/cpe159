@@ -28,12 +28,6 @@ void ChildStuff(int which) {  // which terminal to display msg
       str[0] = '0' + my_pid/10;
       str[1] = '0' + my_pid%10;
 	
-      if ((my_pid%2) == 0 ) {
-	which = TERM2;
-      } else {
-	which = TERM1;
-      }
-	
       while(1) {	//4. loop forever:
          //a. show the msg (see demo for exact content, use multiple sys_write() calls)
 	 sys_write(which, "\n\r", 2);      // get a new line
