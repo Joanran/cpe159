@@ -173,9 +173,19 @@ void SempostService(int sem_num) {
 void DspService(int which) { //does the same work of the TermService of the previous phase
       int i, pid;
 
+      if((term[which].dsp[0]=='\0') && (term[which].dsp_wait_q.size!= 0)) { //if 1st char of dsp buffer is null and the wait queue has PID
+          //str ends & there's a waiter
+         // release the 1st waiter in the wait queue:
+            pid=DeQ(&term[which].dsp_wait_q);	//1. dequeue it from the wait queue
+            pcb[pid].state=READY;			//2. update its state
+            EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
+      }
+	
+
+	
       if(term[which].dsp[0]=='\0') return;	//if 1st character of dsp buffer is null, return; // nothing to dsp
 
-      outportb(term[which].port, term[which].dsp[0]); // disp 1st char
+      outportb(term[which].port, term[which].dsp[0]); // disp 1st char      
 
      for(i=0; i<BUFF_SIZE-1; i++) {	// conduct a loop, one by one {
          term[which].dsp[i]=term[which].dsp[i+1];	//move each character in dsp buffer forward by 1 character
@@ -184,13 +194,6 @@ void DspService(int which) { //does the same work of the TermService of the prev
 	 }
       }
 	
-      if((term[which].dsp[0]=='\0') && (term[which].dsp_wait_q.size!= 0)) { //if 1st char of dsp buffer is null and the wait queue has PID
-          //str ends & there's a waiter
-         // release the 1st waiter in the wait queue:
-            pid=DeQ(&term[which].dsp_wait_q);	//1. dequeue it from the wait queue
-            pcb[pid].state=READY;			//2. update its state
-            EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
-      }
 
    }
 
