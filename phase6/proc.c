@@ -90,8 +90,7 @@ void UserProc(void) {
 		} else if(cpid > 0) { 	//c. >0, build a str from pid and show it (see demo for exact content), parent continues
 			str2[0] = '0' + cpid/10;
       			str2[1] = '0' + cpid%10;
-         		sys_write(which, "\n\rUser Proc: forked ", 20);
-			sys_write(which, str2, 3);    
+         		sys_write(which, str2, 3);    
 		}
 	 }
       }
