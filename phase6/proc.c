@@ -28,6 +28,7 @@ void ChildStuff(int which) {  // which terminal to display msg
       str[0] = '0' + my_pid/10;
       str[1] = '0' + my_pid%10;
 	
+	
       while(1) {	//4. loop forever:
          //a. show the msg (see demo for exact content, use multiple sys_write() calls)
 	 sys_write(which, "\n\r", 2);      // get a new line
@@ -36,7 +37,7 @@ void ChildStuff(int which) {  // which terminal to display msg
          sys_write(which, "child, ", 7);
          sys_write(which, "PID", 3);
 	 sys_write(which, str, 3);         // to show my PID
-         sys_sleep(centi_sec);	//b. and sleep for the period of time
+	 sys_sleep(centi_sec);	//b. and sleep for the period of time
       }
 }
 
@@ -56,7 +57,6 @@ void UserProc(void) {
 	else
 		which = TERM1;
 
-      //which = (my_pid % 2)? TERM1 : TERM2; 
 
       while(1) {
          sys_write(which, "\n\r", 2);      // get a new line
@@ -82,9 +82,14 @@ void UserProc(void) {
 		} else if (cpid==0) {	//b. 0, child process created, let it call ChildStuff(which)
 			ChildStuff(which);
 		} else if(cpid > 0) { 	//c. >0, build a str from pid and show it (see demo for exact content), parent continues
-			str2[0] = '0' + cpid/10;
-      			str2[1] = '0' + cpid%10;
-         		sys_write(which, str2, 3);    
+			sys_write(which, "\n\r", 2);
+			while(cpid > my_pid){
+				str2[0] = '0' + cpid/10;
+				str2[1] = '0' + cpid%10;
+				sys_write(which, str2, 2);
+				cpid--;
+			} 
+		        sys_write(which, str, 3);    
 		}
 	 }
       }
