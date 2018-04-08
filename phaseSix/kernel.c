@@ -1,30 +1,27 @@
 // kernel.c, 159
-// OS bootstrap and kernel code for OS phase 1
-//
 // Team Name: CENA (Members: Jimmy Tran, Erik Gonzalez, & Ann Theriot-Thirakoune) 
-#include "spede.h"         // given SPEDE stuff
+#include "spede.h"         
 #include "kernel_types.h"
 #include "kernel_data.h"
-#include "entry.h"         // entries to kernel
-#include "tools.h"         // small tool functions
-#include "proc.h"          // process names such as IdleProc()
-#include "services.h"      // service code
+#include "entry.h"         
+#include "tools.h"         
+#include "proc.h"          
+#include "services.h"     
+
 struct i386_gate *IDT_p;
 int current_time;
-// kernel data are all declared here:
-
-int run_pid;                       // currently running PID; if -1, none selected
-pid_q_t ready_pid_q, avail_pid_q;  // avail PID and those ready to run
-pcb_t pcb[PROC_NUM];               // Process Control Blocks
-char proc_stack[PROC_NUM][PROC_STACK_SIZE]; // process runtime stacks
+int run_pid;                       
+pid_q_t ready_pid_q, avail_pid_q;  
+pcb_t pcb[PROC_NUM];             
+char proc_stack[PROC_NUM][PROC_STACK_SIZE]; 
 semaphore_t video_sem;			// Phase 3
 term_t term[2];				//Phase 4
 
 void InitKernelData(void) {        // init kernel data
-  	int i; //, ret;
-	run_pid=-1;	//initialize run_pid (to negative 1)
+  	int i;
+	run_pid=-1;	
    	MyBzero((char *)&avail_pid_q, sizeof(avail_pid_q));
-   	MyBzero((char *)&ready_pid_q, sizeof(ready_pid_q ));
+   	MyBzero((char *)&ready_pid_q, sizeof(ready_pid_q));
 	
 	MyBzero((char *)&term[0], sizeof(term_t)); //first zero-ed it out
 	MyBzero((char *)&term[1], sizeof(term_t)); //first zero-ed it out
@@ -32,7 +29,7 @@ void InitKernelData(void) {        // init kernel data
 	term[0].port=0x2f8;
 	term[1].port=0x3e8;
 	
-	term[0].status = 0x2f8 + IIR;   // intr indicator reg
+	term[0].status = 0x2f8 + IIR;  
 	term[1].status = 0x3e8 + IIR;
 	
 
@@ -138,7 +135,7 @@ void Kernel(trapframe_t *trapframe_p) {   // kernel code runs (100 times/second)
       	} else if (key == 'b') {
           	breakpoint();
       	}
-}	
+	}	
 	ProcScheduler(); //call ProcScheduler() to select run_pid
 	ProcLoader(pcb[run_pid].trapframe_p);// given the trapframe_p of the run_pid to load/run it
 }

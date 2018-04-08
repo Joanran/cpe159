@@ -173,9 +173,19 @@ void SempostService(int sem_num) {
 void DspService(int which) { //does the same work of the TermService of the previous phase
       int i, pid;
 
+      if((term[which].dsp[0]=='\0') && (term[which].dsp_wait_q.size!= 0)) { //if 1st char of dsp buffer is null and the wait queue has PID
+          //str ends & there's a waiter
+         // release the 1st waiter in the wait queue:
+            pid=DeQ(&term[which].dsp_wait_q);	//1. dequeue it from the wait queue
+            pcb[pid].state=READY;			//2. update its state
+            EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
+      }
+	
+
+	
       if(term[which].dsp[0]=='\0') return;	//if 1st character of dsp buffer is null, return; // nothing to dsp
 
-      outportb(term[which].port, term[which].dsp[0]); // disp 1st char
+      outportb(term[which].port, term[which].dsp[0]); // disp 1st char      
 
      for(i=0; i<BUFF_SIZE-1; i++) {	// conduct a loop, one by one {
          term[which].dsp[i]=term[which].dsp[i+1];	//move each character in dsp buffer forward by 1 character
@@ -184,13 +194,6 @@ void DspService(int which) { //does the same work of the TermService of the prev
 	 }
       }
 	
-      if((term[which].dsp[0]=='\0') && (term[which].dsp_wait_q.size!= 0)) { //if 1st char of dsp buffer is null and the wait queue has PID
-          //str ends & there's a waiter
-         // release the 1st waiter in the wait queue:
-            pid=DeQ(&term[which].dsp_wait_q);	//1. dequeue it from the wait queue
-            pcb[pid].state=READY;			//2. update its state
-            EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
-      }
 
    }
 
@@ -227,14 +230,15 @@ void TermService(int which){
 	   
 void KbService(int which) {
       int pid; 
-      char *str;
       char ch=inportb(term[which].port);	//1. read a character from the 'port' of the terminal
       outportb(term[which].port, ch);	//2. also write it out via the 'port' of the terminal (to echo back)
 	//outportb(destination,character to write out), like mask
       if(ch != '\r') { //3. if what's read is NOT a '\r' (CR) key, 
-	str = MyStrAppend(term[which].kb, ch); //append it to kb[] string of the terminal (use tool)
+	MyStrAppend(term[which].kb, ch); //append it to kb[] string of the terminal (use tool)
         return; //and just return
       }
+
+       outportb(term[which].port, '\n');	//echos back new line
 	
       //4. (not returning, continue) if there appears a waiting process in the kb wait queue of the terminal,	
       if(term[which].kb_wait_q.size > 0) {	 
@@ -249,6 +253,8 @@ void KbService(int which) {
 
 void ForkService(int *ebx_p) {
 
+	int *p;
+	int delta;
 	if (avail_pid_q.size == 0) {
 		*ebx_p = -1;
 		cons_printf("Cannot Create Child! No More Process!\r\n");
@@ -258,32 +264,25 @@ void ForkService(int *ebx_p) {
 	*ebx_p = DeQ(&avail_pid_q); // get a new child PID (set as what ebx_p points to)
 	EnQ(*ebx_p, &ready_pid_q);  // enqueue the PID to be ready to run
 	
-	MyBzero(pcb[*ebx_p], sizeof(pcb_t));
+	MyBzero((char*)&pcb[*ebx_p], sizeof(pcb_t));
 	pcb[*ebx_p].state = RUN;
 	pcb[*ebx_p].ppid = run_pid;
 	
-	// Need to check this line of code...
-	// 
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
-	// Changing the trapframe_p is not included in the HINTS
-	// but it he says to do it in the html. 
-	pcb[*ebx_p].trapframe_p = (trapframe_t *)&proc_stack[*ebx_p][PROC_STACK_SIZE - sizeof(trapframe_t)]; 
-	pcb[*ebx_p].trapframe_p.ebx = 0;
+	delta = proc_stack[*ebx_p] - proc_stack[run_pid];
 	
-	uint8_t delta = &proc_stack[*ebx_p][0] - &proc_stack[run_pid][0];
+	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
+	pcb[*ebx_p].trapframe_p->ebx = 0;
 	
-	pcb[*ebx_p].trapframe_p.esp = delta;
-	pcb[*ebx_p].trapframe_p.ebp = delta;
-	pcb[*ebx_p].trapframe_p.esi = delta;
-	pcb[*ebx_p].trapframe_p.edi = delta;
+	pcb[*ebx_p].trapframe_p->esp += delta;
+	pcb[*ebx_p].trapframe_p->ebp += delta;
+	pcb[*ebx_p].trapframe_p->esi += delta;
+	pcb[*ebx_p].trapframe_p->edi += delta;
 	
-	int *p;
-	p = ebp;
-	while (*p != 0) {
-		*p = *p - delta;
+	p = pcb[*ebx_p].trapframe_p->ebp;
+	while (*p) {
+		*p += delta;
 		p = (int *) *p;
 	}
-	
-	
 }
 	   

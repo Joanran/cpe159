@@ -9,8 +9,8 @@ int sys_fork(void){
 	asm("movl %1, %%eax;
 	    int $128;
 	    movl %%ebx, %0"
-	    : "=g" (pid);
-	    : "g" (SYS_FORK);
+	    : "=g" (pid)
+	    : "g" (SYS_FORK)
 	    : "eax", "ebx"
 	    );
 	return pid;

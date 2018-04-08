@@ -26,6 +26,6 @@ void DspService(int);
 void KbService(int);
 
 //phase six below
-void ForkService(int *)
+void ForkService(int *);
 
 #endif
