@@ -16,6 +16,7 @@ pcb_t pcb[PROC_NUM];
 char proc_stack[PROC_NUM][PROC_STACK_SIZE]; 
 semaphore_t video_sem;			// Phase 3
 term_t term[2];				//Phase 4
+func_p_t signal_table[PROC_NUM][SIG_NUM];  //phase 7
 
 void InitKernelData(void) {        // init kernel data
   	int i;
