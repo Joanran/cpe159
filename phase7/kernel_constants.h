@@ -30,4 +30,10 @@
 
 #define SYS_FORK 2
 
+#define SYS_SIGNAL 48
+#define SIGINT 2
+#define SIG_NUM 32
+/*notes say there is another constant*/
+
+
 #endif
