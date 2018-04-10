@@ -286,3 +286,6 @@ void ForkService(int *ebx_p) {
 	}
 }
 	   
+void SignalService(int ..., func_p_t ...) {
+	//so it will register the address of the function in the signal table for the requesting process
+}
