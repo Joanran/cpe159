@@ -4,6 +4,10 @@
 #define _PROC_H_
 
 void IdleProc(void);      // PID 0, never preempted
+void ChildStuff(int);
 void UserProc(void);      // PID 1, 2, 3, ...
+
+void Wrapper(func_p_t);
+void Ouch(void);
 
 #endif
