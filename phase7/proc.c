@@ -57,7 +57,9 @@ void UserProc(void) {
 	else
 		which = TERM1;
 
-
+      sys_signal(); //call sys_signal() to register Ouch() as the routine to handle signal SIGINT (ctrl-C)
+    
+	
       while(1) {
          sys_write(which, "\n\r", 2);      // get a new line
          sys_write(which, str, 3);         // to show my PID
@@ -95,3 +97,19 @@ void UserProc(void) {
       }
 	
    }
+
+void Wrapper(func_p_t p) {           // arg implanted in stack
+      asm("pusha");                     // save regs
+      p();                              // call user's signal handler
+      asm("popa");                      // pop back regs
+}
+
+void Ouch(void) {                               // signal handler
+      int ppid, which;
+
+      ppid = sys_getppid();               // follow parent
+      if (ppid == 0) ppid = sys_getpid(); // no parent, use own PID
+
+      which = ppid % 2 ? TERM1 : TERM2;
+      sys_write(which, "Ouch, don't touch that! ", 24);
+}
