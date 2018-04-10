@@ -68,6 +68,9 @@ void TimerService(void) {
 
 void SyscallService(trapframe_t *p) {
 	switch(p->eax) {	//switch on p->eax to call one of the 3 services below
+		case SYS_SIGNAL:
+			SignalService(&(p->ebx)); //NOT RIGHT BUT ITS HERE
+			break;
 		case SYS_FORK:
 			ForkService(&(p->ebx));
 			break;
@@ -288,4 +291,12 @@ void ForkService(int *ebx_p) {
 	   
 void SignalService(int ..., func_p_t ...) {
 	//so it will register the address of the function in the signal table for the requesting process
+}
+
+void WrapperService(int pid, func_p_t p){
+   //a. copy process trapframe to a local/temporary trapframe
+   //b. lower the trapframe location info (in PCB) by 8 bytes
+   //c. copy temporary trapframe to the new lowered location
+   //d. the vacated 8 bytes: put 'p' and 'eip' of the old trapframe there
+   //e. change 'eip' in the copied trapframe to address of Wrapper()
 }
