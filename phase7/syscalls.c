@@ -16,6 +16,17 @@ int sys_fork(void){
 	return pid;
 }
 
+//holy shit come back to this because idk what the parameters are
+void sys_signal(int SIG_NUM) {
+	asm("movl %0, %%eax;      
+	     movl %1, %%ebx;        
+	     int $128"
+	     :
+       : "g" (SYS_SIGNAL), "g" (SIG_NUM)
+       : "eax", "ebx"
+       );
+}
+
 int sys_getpid(void) {
    int pid;
 
