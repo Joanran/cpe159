@@ -28,4 +28,8 @@ void KbService(int);
 //phase six below
 void ForkService(int *);
 
+// phase seven below
+
+void WrapperService(int, func_p_t);
+
 #endif
