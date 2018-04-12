@@ -21,6 +21,8 @@ func_p_t signal_table[PROC_NUM][SIG_NUM];  //phase 7
 void InitKernelData(void) {        // init kernel data
   	int i;
 	run_pid=-1;	
+	MyBzero((char *)signal_table, PROC_NUM);		// phase 7
+	MyBzero((char *)signal_table[PROC_NUM], SIG_NUM);	// phase 7
    	MyBzero((char *)&avail_pid_q, sizeof(avail_pid_q));
    	MyBzero((char *)&ready_pid_q, sizeof(ready_pid_q));
 	
