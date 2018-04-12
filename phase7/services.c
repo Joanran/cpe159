@@ -233,20 +233,34 @@ void TermService(int which){
 	   
 void KbService(int which) {
       int pid; 
-      char ch=inportb(term[which].port);	//1. read a character from the 'port' of the terminal
-      outportb(term[which].port, ch);	//2. also write it out via the 'port' of the terminal (to echo back)
-	//outportb(destination,character to write out), like mask
-      if(ch != '\r') { //3. if what's read is NOT a '\r' (CR) key, 
-	MyStrAppend(term[which].kb, ch); //append it to kb[] string of the terminal (use tool)
+      char ch=inportb(term[which].port);	
+      outportb(term[which].port, ch);	
+	
+      if(ch != '\r') { 
+	MyStrAppend(term[which].kb, ch); 
         return; //and just return
       }
+	
+      if(ch == (char) 0x3) {
+      	   if (term[which].kb_wait_q.size > 0) {
+	  	pid = DeQ(&term[which].kb_wait_q);
+		pcb[pid].state = READY;
+		EnQ(pid, &ready_pid_q);
+	   
+	        if (signal_table[pid][SIGINT] != NULL) {
+		    WrapperService(pid, signal_table[pid][SIGINT]);
+	        } else {
+		    outporb(term[which].port, '^');   
+	        }
+	   }
+	   return;
+      }
 
-       outportb(term[which].port, '\n');	//echos back new line
+       outportb(term[which].port, '\n');	
 	
       //4. (not returning, continue) if there appears a waiting process in the kb wait queue of the terminal,	
       if(term[which].kb_wait_q.size > 0) {	 
-       //release it 
-	pid=DeQ(&term[which].kb_wait_q);	
+        pid=DeQ(&term[which].kb_wait_q);	
         pcb[pid].state=READY;		
 	EnQ(pid, &ready_pid_q); 
       	MyStrcpy((char *)pcb[pid].trapframe_p->ecx, term[which].kb);  //kb str it needs (use MyStrcpy)
@@ -272,6 +286,8 @@ void ForkService(int *ebx_p) {
 	pcb[*ebx_p].ppid = run_pid;
 	
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
+	
+	signal_table[*ebx_p][SIGINT] = signal_table[run_pid][SIGINT]; // Child should inherit the parent's signal table Hint #9
 	delta = proc_stack[*ebx_p] - proc_stack[run_pid];
 	
 	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
@@ -289,8 +305,8 @@ void ForkService(int *ebx_p) {
 	}
 }
 	   
-void SignalService(int ..., func_p_t ...) {
-	//so it will register the address of the function in the signal table for the requesting process
+void SignalService(int pid, func_p_t p) {
+	signal_table[pid][SIGINT] = p;
 }
 
 void WrapperService(int pid, func_p_t p){
