@@ -310,9 +310,21 @@ void SignalService(int pid, func_p_t p) {
 }
 
 void WrapperService(int pid, func_p_t p){
+   trapframe_t *temp_tp = (trapframe_t *) malloc(sizeof(trapframe_t));
+   MyMemcpy((char*)temp_tp, (char*)pcb[pid].trapframe_p, sizeof(trapframe_t));
    //a. copy process trapframe to a local/temporary trapframe
+
+   pcb[pid].trapframe_p = (trapframe_t *) ((int)&pcb[pid].trapframe_p - 8);	
    //b. lower the trapframe location info (in PCB) by 8 bytes
+   MyMemcpy((char*) pcb[pid].trapframe_p, (char*)temp_tp, sizeof(trapframe_t));
    //c. copy temporary trapframe to the new lowered location
+
+   MyMemcpy((char *)&proc_stack[pid][4092], (char *) &p, sizeof(int));
+   MyMemcpy((char *)&proc_stack[pid][4088], (char *) &pcb[pid].trapframe_p->eip, sizeof(int));
    //d. the vacated 8 bytes: put 'p' and 'eip' of the old trapframe there
+
+   pcb[pid].trapframe_p->eip = Wrapper();
    //e. change 'eip' in the copied trapframe to address of Wrapper()
+
+   free(temp_tp);
 }
