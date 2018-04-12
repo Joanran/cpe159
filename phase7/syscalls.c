@@ -41,6 +41,20 @@ int sys_getpid(void) {
    return pid;
 }
 
+int sys_getppid(void) {
+    int pid;
+
+    asm("movl %1, %%eax;
+	 in $128;
+	 movl %%ebx, %0"
+	 : "=g" (pid)
+	 : "g" (SYS_GETPPID)
+	 : "eax", "ebx"
+	);
+	
+    return pid;
+}
+
 void sys_write(int fileno, char *str, int len) {
    if(len == 0){
 	   return;     // am I allowed to mix normal C with asm?
