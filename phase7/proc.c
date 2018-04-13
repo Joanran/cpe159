@@ -57,7 +57,7 @@ void UserProc(void) {
 	else
 		which = TERM1;
 
-      sys_signal(my_pid, signal_table[my_pid][SIGINT]); 
+      sys_signal(my_pid, Ouch); 
       //call sys_signal() to register Ouch() as the routine to handle signal SIGINT (ctrl-C)
     
 	
