@@ -17,13 +17,14 @@ int sys_fork(void){
 }
 
 //holy shit come back to this because idk what the parameters are
-void sys_signal(int SIG_NUM) {
+void sys_signal(int pid, func_p_t p) {
 	asm("movl %0, %%eax;      
-	     movl %1, %%ebx;        
+	     movl %1, %%ebx;
+	     movl %2, %%ecx;
 	     int $128"
 	     :
-       : "g" (SYS_SIGNAL), "g" (SIG_NUM)
-       : "eax", "ebx"
+       : "g" (SYS_SIGNAL), "g" (pid), "g" ((int)p)
+       : "eax", "ebx", "ecx"
        );
 }
 
