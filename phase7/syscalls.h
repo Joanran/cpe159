@@ -6,7 +6,7 @@
 #include "kernel_constants.h"
 
 int sys_fork(void);
-void sys_signal(int, func_t_p);
+void sys_signal(int, func_p_t);
 
 int sys_getppid(void);
 int sys_getpid(void); 
