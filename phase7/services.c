@@ -323,7 +323,7 @@ void WrapperService(int pid, func_p_t p){
    MyMemcpy((char *)&proc_stack[pid][4088], (char *) &pcb[pid].trapframe_p->eip, sizeof(int));
    //d. the vacated 8 bytes: put 'p' and 'eip' of the old trapframe there
 
-   pcb[pid].trapframe_p->eip = Wrapper();
+   pcb[pid].trapframe_p->eip = Wrapper;
    //e. change 'eip' in the copied trapframe to address of Wrapper()
 
    free(temp_tp);
