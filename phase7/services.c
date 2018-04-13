@@ -69,7 +69,7 @@ void TimerService(void) {
 void SyscallService(trapframe_t *p) {
 	switch(p->eax) {	//switch on p->eax to call one of the 3 services below
 		case SYS_SIGNAL:
-			SignalService(&(p->ebx)); //NOT RIGHT BUT ITS HERE
+			SignalService((int)(p->ebx), (void *)p->ecx); 
 			break;
 		case SYS_FORK:
 			ForkService(&(p->ebx));
