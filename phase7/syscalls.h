@@ -3,6 +3,7 @@
 #ifndef _SYSCALLS_H_
 #define _SYSCALLS_H_
 
+#include "kernel_types.h"
 #include "kernel_constants.h"
 
 int sys_fork(void);

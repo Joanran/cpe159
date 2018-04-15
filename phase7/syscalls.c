@@ -3,6 +3,7 @@
 
 #include "kernel_constants.h" // SYS_WRITE 4, SYS_GETPID 20, etc.
 #include "services.h"
+#include "kernel_types.h"
 
 int sys_fork(void){
 	int pid;
@@ -23,9 +24,9 @@ void sys_signal(int pid, func_p_t p) {
 	     movl %2, %%ecx;
 	     int $128"
 	     :
-       : "g" (SYS_SIGNAL), "g" (pid), "g" ((int)p)
-       : "eax", "ebx", "ecx"
-       );
+       	     : "g" (SYS_SIGNAL), "g" (pid), "g" ((int)p)
+       	     : "eax", "ebx", "ecx"
+       	);
 }
 
 int sys_getpid(void) {
@@ -46,7 +47,7 @@ int sys_getppid(void) {
     int pid;
 
     asm("movl %1, %%eax;
-	 in $128;
+	 int $128;
 	 movl %%ebx, %0"
 	 : "=g" (pid)
 	 : "g" (SYS_GETPPID)

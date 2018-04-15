@@ -7,6 +7,7 @@
 #include "proc.h"        // prototypes of processes
 #include "syscalls.h"
 #include "tools.h"
+#include "kernel_types.h"
 void IdleProc(void) {
    int i;
    unsigned short *p = (unsigned short *)0xb8000 + 79; // upper-right corner of display
@@ -68,7 +69,7 @@ void UserProc(void) {
          sys_write(which, "shell ", 6);
          sys_write(which, "command: ", 9);
          sys_read(which, cmd, BUFF_SIZE);  // here we read term KB
-	      
+	 sys_write(which, "\n\r", 2);
 	 sys_write(which, "You've entered: ", 16);
          sys_write(which, cmd, BUFF_SIZE); // verify what's read
          sys_sleep(centi_sec);             // sleep for .5 sec x PID

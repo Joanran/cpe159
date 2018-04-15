@@ -71,6 +71,9 @@ void SyscallService(trapframe_t *p) {
 		case SYS_SIGNAL:
 			SignalService((int)(p->ebx), (void *)p->ecx); 
 			break;
+		case SYS_GETPPID:
+			GetPpidService(&(p->ebx));
+			break;
 		case SYS_FORK:
 			ForkService(&(p->ebx));
 			break;
@@ -234,33 +237,35 @@ void TermService(int which){
 void KbService(int which) {
       int pid; 
       char ch=inportb(term[which].port);	
-      outportb(term[which].port, ch);	
-	
-      if(ch != '\r') { 
-	MyStrAppend(term[which].kb, ch); 
-        return; //and just return
-      }
-	
-      if(ch == (char) 0x3) {
+		
+      if(ch == (char) CTRL_C) {
       	   if (term[which].kb_wait_q.size > 0) {
 	  	pid = DeQ(&term[which].kb_wait_q);
 		pcb[pid].state = READY;
 		EnQ(pid, &ready_pid_q);
-	   
+		MyBzero((char *) pcb[pid].trapframe_p->ecx, 1);	   
+		MyBzero(term[which].kb, BUFF_SIZE);
 	        if (signal_table[pid][SIGINT] != NULL) {
 		    WrapperService(pid, signal_table[pid][SIGINT]);
 	        } else {
-		    outporb(term[which].port, '^');   
+		    outportb(term[which].port, '^');   
 	        }
+
 	   }
 	   return;
       }
 
-       outportb(term[which].port, '\n');	
+      if(ch != '\r') {
+        outportb(term[which].port, ch);	
+	MyStrAppend(term[which].kb, ch);
+        return; //and just return
+	}
+
 	
+        outportb(term[which].port, '\n');
       //4. (not returning, continue) if there appears a waiting process in the kb wait queue of the terminal,	
       if(term[which].kb_wait_q.size > 0) {	 
-        pid=DeQ(&term[which].kb_wait_q);	
+	pid=DeQ(&term[which].kb_wait_q);	
         pcb[pid].state=READY;		
 	EnQ(pid, &ready_pid_q); 
       	MyStrcpy((char *)pcb[pid].trapframe_p->ecx, term[which].kb);  //kb str it needs (use MyStrcpy)
@@ -286,8 +291,8 @@ void ForkService(int *ebx_p) {
 	pcb[*ebx_p].ppid = run_pid;
 	
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
-	
-	signal_table[*ebx_p][SIGINT] = signal_table[run_pid][SIGINT]; // Child should inherit the parent's signal table Hint #9
+
+	MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], SIG_NUM);	
 	delta = proc_stack[*ebx_p] - proc_stack[run_pid];
 	
 	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
@@ -298,7 +303,7 @@ void ForkService(int *ebx_p) {
 	pcb[*ebx_p].trapframe_p->esi += delta;
 	pcb[*ebx_p].trapframe_p->edi += delta;
 	
-	p = pcb[*ebx_p].trapframe_p->ebp;
+	p = (int *)pcb[*ebx_p].trapframe_p->ebp;
 	while (*p) {
 		*p += delta;
 		p = (int *) *p;
@@ -309,22 +314,22 @@ void SignalService(int pid, func_p_t p) {
 	signal_table[pid][SIGINT] = p;
 }
 
+void GetPpidService(int *p){
+	*p = pcb[run_pid].ppid;
+}
+
 void WrapperService(int pid, func_p_t p){
-   trapframe_t *temp_tp = (trapframe_t *) malloc(sizeof(trapframe_t));
+
+   trapframe_t *temp_tp = (trapframe_t *)proc_stack[pid];
    MyMemcpy((char*)temp_tp, (char*)pcb[pid].trapframe_p, sizeof(trapframe_t));
-   //a. copy process trapframe to a local/temporary trapframe
 
-   pcb[pid].trapframe_p = (trapframe_t *) ((int)&pcb[pid].trapframe_p - 8);	
-   //b. lower the trapframe location info (in PCB) by 8 bytes
+   pcb[pid].trapframe_p = (trapframe_t *) ((int)pcb[pid].trapframe_p - (sizeof(int)*2));	
    MyMemcpy((char*) pcb[pid].trapframe_p, (char*)temp_tp, sizeof(trapframe_t));
-   //c. copy temporary trapframe to the new lowered location
 
-   MyMemcpy((char *)&proc_stack[pid][4092], (char *) &p, sizeof(int));
-   MyMemcpy((char *)&proc_stack[pid][4088], (char *) &pcb[pid].trapframe_p->eip, sizeof(int));
-   //d. the vacated 8 bytes: put 'p' and 'eip' of the old trapframe there
+   MyMemcpy((char *) (int)pcb[pid].trapframe_p->ebp-8, (char *) &p, sizeof(int));
+   MyMemcpy((char *) (int)pcb[pid].trapframe_p->ebp-12, (char *) &pcb[pid].trapframe_p->eip, sizeof(int));
 
-   pcb[pid].trapframe_p->eip = Wrapper;
-   //e. change 'eip' in the copied trapframe to address of Wrapper()
+   pcb[pid].trapframe_p->eip = (int) Wrapper;
 
-   free(temp_tp);
+   MyBzero((char *)temp_tp, sizeof(trapframe_t));
 }

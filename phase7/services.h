@@ -29,7 +29,7 @@ void KbService(int);
 void ForkService(int *);
 
 // phase seven below
-
+void SignalService(int, func_p_t);
 void WrapperService(int, func_p_t);
-
+void GetPpidService(int *);
 #endif
