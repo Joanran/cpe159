@@ -17,7 +17,7 @@ int sys_fork(void){
 	return pid;
 }
 
-//holy shit come back to this because idk what the parameters are
+
 void sys_signal(int pid, func_p_t p) {
 	asm("movl %0, %%eax;      
 	     movl %1, %%ebx;
