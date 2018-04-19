@@ -95,6 +95,13 @@ void SyscallService(trapframe_t *p) {
 		case SYS_SEMPOST:	//301
 			SempostService((int)p->ebx);
 			break;		
+		case SYS_EXIT:
+			ExitService((int)p->ebx);
+			break;
+		case SYS_WAITCHILD:
+			ExitService((int)p->ebx, &(p->ecx));
+			break;
+		
 	}	
 }
 
@@ -333,3 +340,6 @@ void WrapperService(int pid, func_p_t p){
 
    MyBzero((char *)temp_tp, sizeof(trapframe_t));
 }
+
+
+
