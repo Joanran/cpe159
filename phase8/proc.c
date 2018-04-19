@@ -68,20 +68,17 @@ void UserProc(void) {
 	 sys_write(which, "\n\r", 2);
 	 sys_write(which, "You've entered: ", 16);
          sys_write(which, cmd, BUFF_SIZE); // verify what's read
-         sys_sleep(centi_sec);             // sleep for .5 sec x PID
+         
 	      
       	 if(MyStrcmp(cmd, "fork")) { //use MyStrcmp() to check if 'cmd' matches "fork"
 	 	cpid=sys_fork();	//1. call for the fork syscall which returns a pid
          	if(cpid==-1) {	//2. if the pid is:
-            		//a. -1, show error message (OS failed to fork)
-			sys_write(which, "\n\r", 2);      // get a new line
-         		sys_write(which, "OS ", 3);    // and other msgs
-         		sys_write(which, "failed ", 7);
-         		sys_write(which, "to ", 9);
-			sys_write(which, "fork ", 9);
+            		 sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
 		} else if (cpid==0) {	//b. 0, child process created, let it call ChildStuff(which)
 			ChildStuff(which);
-		} else if(cpid > 0) { 	//c. >0, build a str from pid and show it (see demo for exact content), parent continues
+		} else {
+			ChildHandler();
+		/*} else if(cpid > 0) { 	//c. >0, build a str from pid and show it (see demo for exact content), parent continues
 			sys_write(which, "\n\r", 2);
 			while(cpid > my_pid){
 				str2[0] = '0' + cpid/10;
@@ -90,7 +87,19 @@ void UserProc(void) {
 				cpid--;
 			} 
 		        sys_write(which, str, 3);    
-		}
+		} */
+		} else if ( (MyStrcmp(cmd, "fork&")) | (MyStrcmp(cmd, "fork&")) ) //cmd is "fork&" or "fork&"
+         		sys_signal(SIGCHILD, ChildHandler); // register signal handler!
+         		cpid=sys_fork();
+        		if (cpid==-1) {
+            			sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
+            			sys_signal(SIGCHILD, '\0');   // cancel handler, send NUL!
+			} else if (cpid==0) {
+            			ChildStuff(which);                   // child do this
+	 		}
+	 	}
+	      sys_sleep(centi_sec);             // sleep for .5 sec x PID
+	
 	 }
       }
 	
