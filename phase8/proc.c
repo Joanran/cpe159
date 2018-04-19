@@ -78,16 +78,6 @@ void UserProc(void) {
 			ChildStuff(which);
 		} else {
 			ChildHandler();
-		/*} else if(cpid > 0) { 	//c. >0, build a str from pid and show it (see demo for exact content), parent continues
-			sys_write(which, "\n\r", 2);
-			while(cpid > my_pid){
-				str2[0] = '0' + cpid/10;
-				str2[1] = '0' + cpid%10;
-				sys_write(which, str2, 2);
-				cpid--;
-			} 
-		        sys_write(which, str, 3);    
-		} */
 		} else if ( (MyStrcmp(cmd, "fork&")) | (MyStrcmp(cmd, "fork&")) ) //cmd is "fork&" or "fork&"
          		sys_signal(SIGCHILD, ChildHandler); // register signal handler!
          		cpid=sys_fork();
@@ -125,6 +115,7 @@ void Ouch(void) {                               // signal handler
    void ChildHandler(void) {
       int which, child_pid, exit_code;
       char str[] = "   ";
+      char str2[] = "   ";
       
       child_pid = sys_waitchild(&exit_code); // block if immediately called
       
@@ -135,15 +126,14 @@ void Ouch(void) {                               // signal handler
       str[1] = '0' + child_pid%10;
 	   
       //show the message (run demo to see format)
-      sys_write(which, "   ", 24);
+      sys_write(which, str, 2);
 	   
       //build str from exit_code
-      str[0] = '0' + exit_code/10;
-      str[1] = '0' + exit_code%10;
+      str2[0] = '0' + exit_code/10;
+      str2[1] = '0' + exit_code%10;
 	   
       //show the message (run demo to see format)
       sys_write(which, "\n\r", 2);
       sys_write(which, "exited, code = ", 15);
-      sys_write(which, exit_code, 2);
-      sys_write(which, "\n\r", 2);
+      sys_write(which, str2, 2);
    } 
