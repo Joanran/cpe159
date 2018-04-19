@@ -356,3 +356,29 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	
 	run_pid = -1;
 }
+
+void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
+      int child_pid, exit_code, i; // really only need these vars (besides args given)
+
+      for(i=0; i<BUFF_SIZE; i++) { //search by looping thru each PCB in the PCB array:
+         //if state ZOMBIE and ppid matches parent (run_pid) --> break loop (found)
+      	if((pcb[child_pid].state==ZOMBIE) && (pcb[child_pid].ppid )) == run_pid) {
+		break;
+	}
+      }	
+
+      if not found (loop index is over boundary of pcb[]):
+         a. change parent's state (to ?)
+         b. reset run_pid (to ?)
+         c. return
+
+      copy to parent's space:
+         1. child PID
+         2. child's exit code
+
+      reclaim child's resources:
+         a. enqueue its PID (to ?)
+         b. clear its PCB
+         c. clear its stack space
+         d. clear its signal table entries
+   }
