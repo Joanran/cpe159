@@ -34,7 +34,7 @@
 #define SYS_SIGNAL 48
 #define SIGINT 2
 #define SIG_NUM 32
-#define CTRL_C 3
+#define CTRL_C 3 
 
  #define SIGCHILD 17
  #define SYS_EXIT 1
