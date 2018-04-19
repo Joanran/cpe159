@@ -99,7 +99,7 @@ void SyscallService(trapframe_t *p) {
 			ExitService((int)p->ebx);
 			break;
 		case SYS_WAITCHILD:
-			ExitService((int)p->ebx, &(p->ecx));
+			ExitService((int)&(p->ebx), (int)&(p->ecx));
 			break;
 		
 	}	
