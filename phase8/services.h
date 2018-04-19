@@ -5,6 +5,9 @@
 
 #include "kernel_types.h"   // need definition of 'func_p_t' below
 
+void ExitService(int);
+void WaitchildService(int *, int *);
+
 void NewProcService(func_p_t);
 void TimerService(void);
 
