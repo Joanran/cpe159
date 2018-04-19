@@ -109,6 +109,7 @@ void Wrapper(func_p_t p) {           // arg implanted in stack
       asm("pusha");                     // save regs
       p();                              // call user's signal handler
       asm("popa");                      // pop back regs
+      asm("mov %%ebp, %%esp; pop %%ebp; ret $4"::); // lil complication
 }
 
 void Ouch(void) {                               // signal handler
