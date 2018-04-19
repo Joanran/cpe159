@@ -6,6 +6,10 @@
 #include "kernel_types.h"
 #include "kernel_constants.h"
 
+void sys_exit(int);
+int sys_waitchild(int *);
+
+
 int sys_fork(void);
 void sys_signal(int, func_p_t);
 
