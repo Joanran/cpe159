@@ -5,6 +5,31 @@
 #include "services.h"
 #include "kernel_types.h"
 
+void sys_exit(int exit_code) {
+	asm("
+	    movl %0, %%eax;
+	    movl %1, %%ebx;
+	    int $128;"
+	    :// no outputs	
+	    : "g" (SYS_EXIT), "g"(exit_code)
+	    : "eax", "ebx"
+	);
+}
+
+int sys_waitchild(int *exit_code_p) {
+    int child_pid;
+    asm("
+	movl %1, %%eax;
+	movl %2, %%ebx;
+	int $128;
+	movl %%ecx, %0;
+	"
+       : "=g" (child_pid)
+       : "g" (SYS_WAITCHILD), "g"((int)exit_code_p)
+       : "eax", "ebx", "ecx");
+    return child_pid;
+}
+
 int sys_fork(void){
 	int pid;
 	asm("movl %1, %%eax;
