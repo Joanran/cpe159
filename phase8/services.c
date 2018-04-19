@@ -333,3 +333,26 @@ void WrapperService(int pid, func_p_t p){
 
    MyBzero((char *)temp_tp, sizeof(trapframe_t));
 }
+
+void ExitService(int exit_code) { // as child calls sys_exit()
+	int ppid, *p;
+	ppid = pcb[run_pid].ppid;
+	if (pcb[ppid].state != WAITCHILD) {
+	    pcb[run_pid].state = ZOMBIE;
+	    run_pid = -1;
+	    if (signal_table[ppid][SIGCHILD] != NULL)
+		    WrapperService(ppid, signal_table[ppid][SIGCHILD]);
+	    return;	
+	}
+	
+	pcb[ppid].trapframe->ecx = exit_code;
+	pcb[ppid].state = READY;
+	EnQ(ppid, &ready_pid_q);
+	
+	EnQ(run_pid, &avail_pid_q);
+	MyBzero(pcb[run_pid], sizeof(pcb_t));
+	MyBzero(proc_stack[run_pid], sizeof(proc_stack));
+	MyBzero(signaltable[run_pid], SIGNUM)
+	
+	run_pid = -1;
+}
