@@ -36,6 +36,8 @@
 #define SIG_NUM 32
 #define CTRL_C 3
 
-//SIGCHILD
+ #define SIGCHILD 17
+ #define SYS_EXIT 1
+ #define SYS_WAITCHILD 7
 
 #endif
