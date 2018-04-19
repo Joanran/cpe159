@@ -111,3 +111,29 @@ void Ouch(void) {                               // signal handler
       which = ppid % 2 ? TERM1 : TERM2;
       sys_write(which, "Ouch, don't touch that! ", 24);
 }
+
+   void ChildHandler(void) {
+      int which, child_pid, exit_code;
+      char str[] = "   ";
+      
+      child_pid = sys_waitchild(&exit_code); // block if immediately called
+      
+      which = ppid % 2 ? TERM1 : TERM2; //determine which terminal to use (from its own PID)
+      
+      //build str from child_pid
+      str[0] = '0' + child_pid/10;
+      str[1] = '0' + child_pid%10;
+	   
+      //show the message (run demo to see format)
+      sys_write(which, "   ", 24);
+	   
+      //build str from exit_code
+      str[0] = '0' + exit_code/10;
+      str[1] = '0' + exit_code%10;
+	   
+      //show the message (run demo to see format)
+      sys_write(which, "\n\r", 2);
+      sys_write(which, "exited, code = ", 15);
+      sys_write(which, exit_code, 2);
+      sys_write(which, "\n\r", 2);
+   } 
