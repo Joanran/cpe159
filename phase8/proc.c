@@ -21,7 +21,7 @@ void IdleProc(void) {
 }
 
 void ChildStuff(int which) {  // which terminal to display msg
-      int my_pid, centi_sec;
+      	int my_pid, centi_sec, i;
       char str[] = "   ";
       my_pid = sys_getpid();	//1. get my PID
       centi_sec = 50 * my_pid;	//2. calcalute sleep period (multiple of .5 seconds times my PID)
@@ -29,17 +29,13 @@ void ChildStuff(int which) {  // which terminal to display msg
       str[0] = '0' + my_pid/10;
       str[1] = '0' + my_pid%10;
 	
-	
-      while(1) {	//4. loop forever:
-         //a. show the msg (see demo for exact content, use multiple sys_write() calls)
-	 sys_write(which, "\n\r", 2);      // get a new line
-         sys_write(which, "I'm ", 4);    // and other msgs
-         sys_write(which, "the ", 4);
-         sys_write(which, "child, ", 7);
-         sys_write(which, "PID", 3);
-	 sys_write(which, str, 3);         // to show my PID
-	 sys_sleep(centi_sec);	//b. and sleep for the period of time
+      for(i=0; i<3; i++) {                 // loop 3 times and exit
+         sys_write(which, "\n\r", 2);      // next line
+         sys_write(which, "I'm the child, PID ", 19);
+         sys_write(which, str, 3);         // show my PID
+         sys_sleep(centi_sec);             // sleep for .5 sec x PID
       }
+      sys_exit(100 - my_pid);              // exit, exit code to parent
 }
 
 void UserProc(void) {
