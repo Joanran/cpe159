@@ -345,7 +345,7 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	ppid = pcb[run_pid].ppid;
 	if (pcb[ppid].state != WAITCHILD) {
 	    pcb[run_pid].state = ZOMBIE;
-	    run_pid = -1;
+	    run_pid = ppid;
 	    if (signal_table[ppid][SIGCHILD] != NULL)
 		    WrapperService(ppid, signal_table[ppid][SIGCHILD]);
 	    return;	
