@@ -350,48 +350,42 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 		    WrapperService(ppid, signal_table[ppid][SIGCHILD]);
 	    return;	
 	}
-	
-	pcb[ppid].trapframe->ecx = exit_code;
+	pcb[ppid].trapframe->ebx = exit_code;
+	pcb[ppid].trapframe->ecx = run_pid;
 	pcb[ppid].state = READY;
 	EnQ(ppid, &ready_pid_q);
 	
 	EnQ(run_pid, &avail_pid_q);
-	MyBzero(pcb[run_pid], sizeof(pcb_t));
+	MyBzero(&pcb[run_pid], sizeof(pcb_t));
 	MyBzero(proc_stack[run_pid], sizeof(proc_stack));
-	MyBzero(signaltable[run_pid], SIGNUM)
+	MyBzero(signaltable[run_pid], SIGNUM);
 	
 	run_pid = -1;
 }
 
 void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       int child_pid, exit_code, i; // really only need these vars (besides args given)
-      child_pid = *child_pid_p;
-      exit_code = *exit_code_p;
+
 
       for(i=1; i<PROC_NUM; i++) { //search by looping thru each PCB in the PCB array:
          //if state ZOMBIE and ppid matches parent (run_pid) --> break loop (found)
       	if(pcb[i].state==ZOMBIE && pcb[i].ppid == run_pid) {
+		child_pid = i;
 		break;
 	}
       }	
 
       if(i == PROC_NUM) {
-	  pcb[child_pid]
+	  pcb[pcb[child_pid].ppid].state = WAITCHILD;
+	  run_pid = -1;
 	  return;
       }
-     
-      if not found (loop index is over boundary of pcb[]):
-         a. change parent's state (to ?)
-         b. reset run_pid (to ?)
-         c. return
+	
+      *child_pid_p = child_pid; // found by searching the PCB for a zombie PID
+      *exit_code_p = pcb[child_pid].trapframe->ebx; // the child's exit code is found in ebx in the trapframe.
 
-      copy to parent's space:
-         1. child PID
-         2. child's exit code
-
-      reclaim child's resources:
-         a. enqueue its PID (to ?)
-         b. clear its PCB
-         c. clear its stack space
-         d. clear its signal table entries
+      EnQ(run_pid, &avail_pid_q);
+      MyBzero(&pcb[run_pid], sizeof(pcb_t));
+      MyBzero(proc_stack[run_pid], sizeof(proc_stack));
+      MyBzero(signaltable[run_pid], SIGNUM);
    }
