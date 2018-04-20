@@ -68,6 +68,12 @@ void TimerService(void) {
 
 void SyscallService(trapframe_t *p) {
 	switch(p->eax) {	//switch on p->eax to call one of the 3 services below
+		case SYS_WAITCHILD:
+			WaitchildService((int *)(p->ebx), &(p->ecx));
+			break;
+		case SYS_EXIT:
+			ExitService((int) p->ebx);
+			break;
 		case SYS_SIGNAL:
 			SignalService((int)(p->ebx), (void *)p->ecx); 
 			break;
@@ -359,14 +365,21 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 
 void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       int child_pid, exit_code, i; // really only need these vars (besides args given)
+      child_pid = *child_pid_p;
+      exit_code = *exit_code_p;
 
-      for(i=0; i<BUFF_SIZE; i++) { //search by looping thru each PCB in the PCB array:
+      for(i=1; i<PROC_NUM; i++) { //search by looping thru each PCB in the PCB array:
          //if state ZOMBIE and ppid matches parent (run_pid) --> break loop (found)
-      	if((pcb[child_pid].state==ZOMBIE) && (pcb[child_pid].ppid )) == run_pid) {
+      	if(pcb[i].state==ZOMBIE && pcb[i].ppid == run_pid) {
 		break;
 	}
       }	
 
+      if(i == PROC_NUM) {
+	  pcb[child_pid]
+	  return;
+      }
+     
       if not found (loop index is over boundary of pcb[]):
          a. change parent's state (to ?)
          b. reset run_pid (to ?)
