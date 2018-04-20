@@ -67,7 +67,13 @@ void TimerService(void) {
 //the new stuff for phaseTwo is down below
 
 void SyscallService(trapframe_t *p) {
-	switch(p->eax) {	//switch on p->eax to call one of the 3 services below
+	switch(p->eax) {	
+		case SYS_EXIT: //1
+			ExitService((int)(p->ebx)); 
+			break;	
+		case SYS_WAITCHILD: //7
+			WaitchildService((int)(p->ebx), (int)p->ecx); //CHECK
+			break;
 		case SYS_SIGNAL:
 			SignalService((int)(p->ebx), (void *)p->ecx); 
 			break;
@@ -352,7 +358,7 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	EnQ(run_pid, &avail_pid_q);
 	MyBzero(pcb[run_pid], sizeof(pcb_t));
 	MyBzero(proc_stack[run_pid], sizeof(proc_stack));
-	MyBzero(signaltable[run_pid], SIGNUM)
+	MyBzero(signaltable[run_pid], SIGNUM);
 	
 	run_pid = -1;
 }
@@ -360,25 +366,23 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       int child_pid, exit_code, i; // really only need these vars (besides args given)
 
-      for(i=0; i<BUFF_SIZE; i++) { //search by looping thru each PCB in the PCB array:
-         //if state ZOMBIE and ppid matches parent (run_pid) --> break loop (found)
-      	if((pcb[child_pid].state==ZOMBIE) && (pcb[child_pid].ppid )) == run_pid) {
-		break;
+      for(i=0; i<BUFF_SIZE; i++) { //search by looping thru each PCB in the PCB array 
+      	if ((pcb[child_pid].state==ZOMBIE)  && (pcb[child_pid].ppid  == pcb[run_pid].ppid)) {  //if state ZOMBIE and ppid matches parent (run_pid)
+		break; //break loop (found)
+	} else { 	//if not found (loop index is over boundary of pcb[]):
+		pcb[run_pid].state==WAITCHILD; //a. change parent's state (to ?)
+         	run_pid=-1;	//b. reset run_pid (to ?)
+         	return;		//c. return
 	}
       }	
 
-      if not found (loop index is over boundary of pcb[]):
-         a. change parent's state (to ?)
-         b. reset run_pid (to ?)
-         c. return
+      //copy to parent's space:
+      pcb[run_pid].ppid=pcb[child_pid].ppid; // 1. child PID
+      pcb[run_pid].trapframe->ecx = exit_code; //2. child's exit code, CHECK
 
-      copy to parent's space:
-         1. child PID
-         2. child's exit code
-
-      reclaim child's resources:
-         a. enqueue its PID (to ?)
-         b. clear its PCB
-         c. clear its stack space
-         d. clear its signal table entries
+      //reclaim child's resources:
+      EnQ(run_pid, &ready_pid_q);	// a. enqueue its PID (to ?)
+      MyBzero(pcb[run_pid], sizeof(pcb_t)); // b. clear its PCB
+      MyBzero(proc_stack[run_pid], sizeof(proc_stack)); // c. clear its stack space
+      MyBzero(signaltable[run_pid], SIGNUM); // d. clear its signal table entries
    }
