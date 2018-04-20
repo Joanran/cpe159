@@ -55,7 +55,6 @@ void UserProc(void) {
 		which = TERM1;
 
       sys_signal(my_pid, Ouch); 
-      //call sys_signal() to register Ouch() as the routine to handle signal SIGINT (ctrl-C)
     
 	
       while(1) {
@@ -70,30 +69,31 @@ void UserProc(void) {
          sys_write(which, cmd, BUFF_SIZE); // verify what's read
          
 	      
-      	 if(MyStrcmp(cmd, "fork")) { //use MyStrcmp() to check if 'cmd' matches "fork"
-	 	cpid=sys_fork();	//1. call for the fork syscall which returns a pid
-         	if(cpid==-1) {	//2. if the pid is:
+      	 if(MyStrcmp(cmd, "fork")) { 
+	 	cpid=sys_fork();	
+         	if(cpid==-1) {	
             		 sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
-		} else if (cpid==0) {	//b. 0, child process created, let it call ChildStuff(which)
+		} else if (cpid==0) {	
 			ChildStuff(which);
 		} else {
 			ChildHandler();
-		} else if ( (MyStrcmp(cmd, "fork&")) | (MyStrcmp(cmd, "fork&")) ) //cmd is "fork&" or "fork&"
-         		sys_signal(SIGCHILD, ChildHandler); // register signal handler!
-         		cpid=sys_fork();
-        		if (cpid==-1) {
-            			sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
-            			sys_signal(SIGCHILD, '\0');   // cancel handler, send NUL!
-			} else if (cpid==0) {
-            			ChildStuff(which);                   // child do this
-	 		}
-	 	}
-	      sys_sleep(centi_sec);             // sleep for .5 sec x PID
+		} 
+	 } else if ( MyStrcmp(cmd, "fork &") || MyStrcmp(cmd, "fork&") ) {
+		sys_signal(SIGCHILD, ChildHandler); 
+         	cpid=sys_fork();
+        	if (cpid==-1) {
+            		sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
+            		sys_signal(SIGCHILD, (void *) 0);   // cancel handler, send NUL!
+		} else if (cpid==0) {
+            		ChildStuff(which);                   
+	 	}		
+	 } // end if/else
+		
+	 sys_sleep(centi_sec);            
+	       
+      } // end while
 	
-	 }
-      }
-	
-   }
+ }
 
 void Wrapper(func_p_t p) {           // arg implanted in stack
       asm("pusha");                     // save regs
