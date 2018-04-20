@@ -119,7 +119,7 @@ void Ouch(void) {                               // signal handler
       
       child_pid = sys_waitchild(&exit_code); // block if immediately called
       
-      which = ppid % 2 ? TERM1 : TERM2; //determine which terminal to use (from its own PID)
+      which = (child_pid % 2) ? TERM1 : TERM2; //determine which terminal to use (from its own PID)
       
       //build str from child_pid
       str[0] = '0' + child_pid/10;
