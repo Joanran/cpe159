@@ -55,7 +55,6 @@ void UserProc(void) {
 		which = TERM1;
 
       sys_signal(my_pid, Ouch); 
-    
 	
       while(1) {
          sys_write(which, "\n\r", 2);      // get a new line
@@ -77,23 +76,26 @@ void UserProc(void) {
 			ChildStuff(which);
 		} else {
 			ChildHandler();
-		} 
+		}
 	 } else if ( MyStrcmp(cmd, "fork &") || MyStrcmp(cmd, "fork&") ) {
-		sys_signal(SIGCHILD, ChildHandler); 
+		sys_signal(my_pid, ChildHandler); 
          	cpid=sys_fork();
         	if (cpid==-1) {
             		sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
             		sys_signal(SIGCHILD, (void *) 0);   // cancel handler, send NUL!
 		} else if (cpid==0) {
             		ChildStuff(which);                   
-	 	}		
+	 	}
+		MyBzero((char*)pcb[run_pid].trapframe_p->ecx, 1);
+		term[which].kb[0] = '\0';
+		MyBzero(cmd, BUFF_SIZE);		
 	 } // end if/else
 		
 	 sys_sleep(centi_sec);            
 	       
       } // end while
 	
- }
+}
 
 void Wrapper(func_p_t p) {           // arg implanted in stack
       asm("pusha");                     // save regs
@@ -112,28 +114,30 @@ void Ouch(void) {                               // signal handler
       sys_write(which, "Ouch, don't touch that! ", 24);
 }
 
-   void ChildHandler(void) {
+void ChildHandler(void) {
       int which, child_pid, exit_code;
       char str[] = "   ";
       char str2[] = "   ";
       
       child_pid = sys_waitchild(&exit_code); // block if immediately called
       
-      which = (child_pid % 2) ? TERM1 : TERM2; //determine which terminal to use (from its own PID)
+      which = (run_pid % 2) ? TERM1 : TERM2; //determine which terminal to use (from its own PID)
       
       //build str from child_pid
       str[0] = '0' + child_pid/10;
       str[1] = '0' + child_pid%10;
 	   
       //show the message (run demo to see format)
+     
+      sys_write(which, "\n\r", 2);
       sys_write(which, str, 2);
+
 	   
       //build str from exit_code
       str2[0] = '0' + exit_code/10;
       str2[1] = '0' + exit_code%10;
 	   
       //show the message (run demo to see format)
-      sys_write(which, "\n\r", 2);
       sys_write(which, "exited, code = ", 15);
       sys_write(which, str2, 2);
-   } 
+} 

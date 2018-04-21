@@ -314,10 +314,14 @@ void ForkService(int *ebx_p) {
 		*p += delta;
 		p = (int *) *p;
 	}
+
 }
 	   
 void SignalService(int pid, func_p_t p) {
-	signal_table[pid][SIGINT] = p;
+	if (*p == ChildHandler)
+		signal_table[pid][SIGCHILD] = p;
+	else if (*p == Ouch)
+		signal_table[pid][SIGINT] = p;
 }
 
 void GetPpidService(int *p){
@@ -341,7 +345,7 @@ void WrapperService(int pid, func_p_t p){
 }
 
 void ExitService(int exit_code) { // as child calls sys_exit()
-	int ppid, *p;
+	int ppid;
 	ppid = pcb[run_pid].ppid;
 	if (pcb[ppid].state != WAITCHILD) {
 	    pcb[run_pid].state = ZOMBIE;
@@ -350,42 +354,43 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 		    WrapperService(ppid, signal_table[ppid][SIGCHILD]);
 	    return;	
 	}
-	pcb[ppid].trapframe->ebx = exit_code;
-	pcb[ppid].trapframe->ecx = run_pid;
+	*(int*)(pcb[ppid].trapframe_p->ebx) = exit_code;
+	pcb[ppid].trapframe_p->ecx = run_pid;
 	pcb[ppid].state = READY;
 	EnQ(ppid, &ready_pid_q);
 	
 	EnQ(run_pid, &avail_pid_q);
-	MyBzero(&pcb[run_pid], sizeof(pcb_t));
-	MyBzero(proc_stack[run_pid], sizeof(proc_stack));
-	MyBzero(signaltable[run_pid], SIGNUM);
+	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
+	MyBzero((char *)proc_stack[run_pid], PROC_STACK_SIZE);
+	MyBzero((char *)signal_table[run_pid], SIG_NUM);
 	
 	run_pid = -1;
 }
 
 void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
-      int child_pid, exit_code, i; // really only need these vars (besides args given)
+      int child_pid, i; // really only need these vars (besides args given)
 
 
       for(i=1; i<PROC_NUM; i++) { //search by looping thru each PCB in the PCB array:
          //if state ZOMBIE and ppid matches parent (run_pid) --> break loop (found)
       	if(pcb[i].state==ZOMBIE && pcb[i].ppid == run_pid) {
 		child_pid = i;
+		pcb[child_pid].trapframe_p->ecx = i;
 		break;
 	}
       }	
 
       if(i == PROC_NUM) {
-	  pcb[pcb[child_pid].ppid].state = WAITCHILD;
+	  pcb[run_pid].state = WAITCHILD;
 	  run_pid = -1;
 	  return;
       }
 	
       *child_pid_p = child_pid; // found by searching the PCB for a zombie PID
-      *exit_code_p = pcb[child_pid].trapframe->ebx; // the child's exit code is found in ebx in the trapframe.
+      *exit_code_p = pcb[child_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
 
       EnQ(run_pid, &avail_pid_q);
-      MyBzero(&pcb[run_pid], sizeof(pcb_t));
-      MyBzero(proc_stack[run_pid], sizeof(proc_stack));
-      MyBzero(signaltable[run_pid], SIGNUM);
+      MyBzero((char*)&pcb[run_pid], sizeof(pcb_t));
+      MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
+      MyBzero((char*)signal_table[run_pid], SIG_NUM);
    }
