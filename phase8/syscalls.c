@@ -43,13 +43,13 @@ int sys_fork(void){
 }
 
 
-void sys_signal(int pid, func_p_t p) {
+void sys_signal(int signal, func_p_t p) {
 	asm("movl %0, %%eax;      
 	     movl %1, %%ebx;
 	     movl %2, %%ecx;
 	     int $128"
 	     :
-       	     : "g" (SYS_SIGNAL), "g" (pid), "g" ((int)p)
+       	     : "g" (SYS_SIGNAL), "g" (signal), "g" ((int)p)
        	     : "eax", "ebx", "ecx"
        	);
 }

@@ -251,8 +251,8 @@ void KbService(int which) {
 		EnQ(pid, &ready_pid_q);
 		MyBzero((char *) pcb[pid].trapframe_p->ecx, 1);	   
 		MyBzero(term[which].kb, BUFF_SIZE);
-	        if (signal_table[pid][SIGINT] != NULL) {
-		    WrapperService(pid, signal_table[pid][SIGINT]);
+	        if (signal_table[SIGINT] != NULL) {
+		    WrapperService(pid, signal_table[SIGINT]);
 	        } else {
 		    outportb(term[which].port, '^');   
 	        }
@@ -298,7 +298,7 @@ void ForkService(int *ebx_p) {
 	
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
 
-	MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], SIG_NUM);	
+//	MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], SIG_NUM);	
 	delta = proc_stack[*ebx_p] - proc_stack[run_pid];
 	
 	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
@@ -317,11 +317,8 @@ void ForkService(int *ebx_p) {
 
 }
 	   
-void SignalService(int pid, func_p_t p) {
-	if (*p == ChildHandler)
-		signal_table[pid][SIGCHILD] = p;
-	else if (*p == Ouch)
-		signal_table[pid][SIGINT] = p;
+void SignalService(int SIGNUM, func_p_t p) {
+		signal_table[SIGNUM] = p;
 }
 
 void GetPpidService(int *p){
@@ -350,8 +347,8 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	if (pcb[ppid].state != WAITCHILD) {
 	    pcb[run_pid].state = ZOMBIE;
 	    run_pid = ppid;
-	    if (signal_table[ppid][SIGCHILD] != NULL)
-		    WrapperService(ppid, signal_table[ppid][SIGCHILD]);
+	    if (signal_table[SIGCHILD] != NULL)
+		    WrapperService(ppid, signal_table[SIGCHILD]);
 	    return;	
 	}
 	*(int*)(pcb[ppid].trapframe_p->ebx) = exit_code;
@@ -362,7 +359,7 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	EnQ(run_pid, &avail_pid_q);
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
 	MyBzero((char *)proc_stack[run_pid], PROC_STACK_SIZE);
-	MyBzero((char *)signal_table[run_pid], SIG_NUM);
+	MyBzero((char *)signal_table, SIG_NUM);
 	
 	run_pid = -1;
 }
@@ -375,7 +372,6 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
          //if state ZOMBIE and ppid matches parent (run_pid) --> break loop (found)
       	if(pcb[i].state==ZOMBIE && pcb[i].ppid == run_pid) {
 		child_pid = i;
-		pcb[child_pid].trapframe_p->ecx = i;
 		break;
 	}
       }	
@@ -392,5 +388,5 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       EnQ(run_pid, &avail_pid_q);
       MyBzero((char*)&pcb[run_pid], sizeof(pcb_t));
       MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
-      MyBzero((char*)signal_table[run_pid], SIG_NUM);
+      MyBzero((char*)signal_table, SIG_NUM);
    }

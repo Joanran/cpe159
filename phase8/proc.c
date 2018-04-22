@@ -54,7 +54,7 @@ void UserProc(void) {
 	else
 		which = TERM1;
 
-      sys_signal(my_pid, Ouch); 
+      sys_signal(SIGINT, Ouch); 
 	
       while(1) {
          sys_write(which, "\n\r", 2);      // get a new line
@@ -78,7 +78,7 @@ void UserProc(void) {
 			ChildHandler();
 		}
 	 } else if ( MyStrcmp(cmd, "fork &") || MyStrcmp(cmd, "fork&") ) {
-		sys_signal(my_pid, ChildHandler); 
+		sys_signal(SIGCHILD, ChildHandler); 
          	cpid=sys_fork();
         	if (cpid==-1) {
             		sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
