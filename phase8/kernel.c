@@ -16,13 +16,13 @@ pcb_t pcb[PROC_NUM];
 char proc_stack[PROC_NUM][PROC_STACK_SIZE]; 
 semaphore_t video_sem;			// Phase 3
 term_t term[2];				//Phase 4
-func_p_t signal_table[SIG_NUM];  //phase 7
+func_p_t signal_table[PROC_NUM][SIG_NUM];  //phase 7
 
 void InitKernelData(void) {        // init kernel data
   	int i;
 	run_pid=-1;	
   MyBzero((char *)proc_stack, (PROC_STACK_SIZE*PROC_NUM));  
-  MyBzero((char *)signal_table, SIG_NUM);	// phase 7
+  MyBzero((char *)signal_table, SIG_NUM*PROC_NUM);	// phase 7
   MyBzero((char *)&avail_pid_q, sizeof(avail_pid_q));
   MyBzero((char *)&ready_pid_q, sizeof(ready_pid_q));
 	

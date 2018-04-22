@@ -75,7 +75,7 @@ void SyscallService(trapframe_t *p) {
 			ExitService((int) p->ebx);
 			break;
 		case SYS_SIGNAL:
-			SignalService((int)(p->ebx), (void *)p->ecx); 
+			SignalService((int)(p->ebx), (func_p_t)p->ecx); 
 			break;
 		case SYS_GETPPID:
 			GetPpidService(&(p->ebx));
@@ -251,8 +251,8 @@ void KbService(int which) {
 		EnQ(pid, &ready_pid_q);
 		MyBzero((char *) pcb[pid].trapframe_p->ecx, 1);	   
 		MyBzero(term[which].kb, BUFF_SIZE);
-	        if (signal_table[SIGINT] != NULL) {
-		    WrapperService(pid, signal_table[SIGINT]);
+	        if (signal_table[pid][SIGINT] != NULL) {
+		    WrapperService(pid, signal_table[pid][SIGINT]);
 	        } else {
 		    outportb(term[which].port, '^');   
 	        }
@@ -298,7 +298,7 @@ void ForkService(int *ebx_p) {
 	
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
 
-//	MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], SIG_NUM);	
+  MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], SIG_NUM);	
 	delta = proc_stack[*ebx_p] - proc_stack[run_pid];
 	
 	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
@@ -317,8 +317,11 @@ void ForkService(int *ebx_p) {
 
 }
 	   
-void SignalService(int SIGNUM, func_p_t p) {
-		signal_table[SIGNUM] = p;
+void SignalService(int pid, func_p_t p) {
+    if (*p == Ouch)
+        signal_table[pid][SIGINT] = p;
+    else if(*p == ChildHandler)
+        signal_table[pid][SIGCHILD] = p;
 }
 
 void GetPpidService(int *p){
@@ -333,10 +336,10 @@ void WrapperService(int pid, func_p_t p){
    pcb[pid].trapframe_p = (trapframe_t *) ((int)pcb[pid].trapframe_p - (sizeof(int)*2));	
    MyMemcpy((char*) pcb[pid].trapframe_p, (char*)temp_tp, sizeof(trapframe_t));
 
-   MyMemcpy((char *) (int)pcb[pid].trapframe_p->ebp-8, (char *) &p, sizeof(int));
-   MyMemcpy((char *) (int)pcb[pid].trapframe_p->ebp-12, (char *) &pcb[pid].trapframe_p->eip, sizeof(int));
+   MyMemcpy((char *) (int)&pcb[pid].trapframe_p->efl+8, (char *) &p, sizeof(int));
+   MyMemcpy((char *) (int)&pcb[pid].trapframe_p->efl+4, (char *) &pcb[pid].trapframe_p->eip, sizeof(int));
 
-   pcb[pid].trapframe_p->eip = (int) Wrapper;
+   pcb[pid].trapframe_p->eip = (unsigned int) Wrapper;
 
    MyBzero((char *)temp_tp, sizeof(trapframe_t));
 }
@@ -346,9 +349,11 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	ppid = pcb[run_pid].ppid;
 	if (pcb[ppid].state != WAITCHILD) {
 	    pcb[run_pid].state = ZOMBIE;
-	    run_pid = ppid;
-	    if (signal_table[SIGCHILD] != NULL)
-		    WrapperService(ppid, signal_table[SIGCHILD]);
+	    run_pid = -1;
+      pcb[ppid].state=READY;
+      EnQ(ppid, &ready_pid_q);
+	    if (signal_table[ppid][SIGCHILD] != NULL)
+		    WrapperService(ppid, signal_table[ppid][SIGINT]);
 	    return;	
 	}
 	*(int*)(pcb[ppid].trapframe_p->ebx) = exit_code;
@@ -359,7 +364,7 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	EnQ(run_pid, &avail_pid_q);
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
 	MyBzero((char *)proc_stack[run_pid], PROC_STACK_SIZE);
-	MyBzero((char *)signal_table, SIG_NUM);
+  MyBzero((char *)signal_table[run_pid], PROC_NUM*SIG_NUM);
 	
 	run_pid = -1;
 }
@@ -388,5 +393,5 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       EnQ(run_pid, &avail_pid_q);
       MyBzero((char*)&pcb[run_pid], sizeof(pcb_t));
       MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
-      MyBzero((char*)signal_table, SIG_NUM);
+      MyBzero((char*)signal_table[run_pid], SIG_NUM);
    }

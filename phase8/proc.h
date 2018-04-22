@@ -9,7 +9,6 @@ void UserProc(void);      // PID 1, 2, 3, ...
 
 void Wrapper(func_p_t);
 void Ouch(void);
-
 void ChildHandler(void);
 
 #endif

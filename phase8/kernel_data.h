@@ -16,7 +16,7 @@ extern semaphore_t video_sem;
 
 extern term_t term[2];
 
-extern func_p_t signal_table[SIG_NUM];
+extern func_p_t signal_table[PROC_NUM][SIG_NUM];
 
 
 #endif                              // endif of ifndef
