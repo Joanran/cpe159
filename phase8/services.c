@@ -263,7 +263,7 @@ void KbService(int which) {
 
       if(ch != '\r') {
         outportb(term[which].port, ch);	
-	MyStrAppend(term[which].kb, ch);
+	      MyStrAppend(term[which].kb, ch);
         return; //and just return
 	}
 
@@ -318,6 +318,10 @@ void ForkService(int *ebx_p) {
 }
 	   
 void SignalService(int pid, func_p_t p) {
+    if (pid == SIGCHILD) {
+        signal_table[run_pid][SIGCHILD] = p;
+        return;
+    }
     if (*p == Ouch)
         signal_table[pid][SIGINT] = p;
     else if(*p == ChildHandler)
@@ -349,11 +353,9 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	ppid = pcb[run_pid].ppid;
 	if (pcb[ppid].state != WAITCHILD) {
 	    pcb[run_pid].state = ZOMBIE;
-	    run_pid = -1;
-      pcb[ppid].state=READY;
-      EnQ(ppid, &ready_pid_q);
+	    run_pid = ppid;
 	    if (signal_table[ppid][SIGCHILD] != NULL)
-		    WrapperService(ppid, signal_table[ppid][SIGINT]);
+		    WrapperService(ppid, signal_table[ppid][SIGCHILD]);
 	    return;	
 	}
 	*(int*)(pcb[ppid].trapframe_p->ebx) = exit_code;
@@ -363,8 +365,8 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	
 	EnQ(run_pid, &avail_pid_q);
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
-	MyBzero((char *)proc_stack[run_pid], PROC_STACK_SIZE);
-  MyBzero((char *)signal_table[run_pid], PROC_NUM*SIG_NUM);
+	MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
+  MyBzero((char *)signal_table[run_pid], SIG_NUM);
 	
 	run_pid = -1;
 }
@@ -390,8 +392,8 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       *child_pid_p = child_pid; // found by searching the PCB for a zombie PID
       *exit_code_p = pcb[child_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
 
-      EnQ(run_pid, &avail_pid_q);
-      MyBzero((char*)&pcb[run_pid], sizeof(pcb_t));
-      MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
-      MyBzero((char*)signal_table[run_pid], SIG_NUM);
+      EnQ(child_pid, &avail_pid_q);
+      MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
+      MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
+      MyBzero((char*)signal_table[child_pid], SIG_NUM);
    }

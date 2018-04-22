@@ -79,14 +79,13 @@ void UserProc(void) {
 		}
 	 } else if ( MyStrcmp(cmd, "fork &") || MyStrcmp(cmd, "fork&") ) {
 		sys_signal(run_pid, ChildHandler); 
-         	cpid=sys_fork();
+          cpid=sys_fork();
         	if (cpid==-1) {
             		sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
-            		sys_signal(run_pid, (func_p_t) 0);   // cancel handler, send NUL!
+            		sys_signal(SIGCHILD, (func_p_t) 0);   // cancel handler, send NUL!
 		} else if (cpid==0) {
             		ChildStuff(which);                   
 	 	}
-		MyBzero((char*)pcb[run_pid].trapframe_p->ecx, 1);
 		term[which].kb[0] = '\0';
 		MyBzero(cmd, BUFF_SIZE);		
 	 } // end if/else
@@ -140,4 +139,6 @@ void ChildHandler(void) {
       //show the message (run demo to see format)
       sys_write(which, "exited, code = ", 15);
       sys_write(which, str2, 2);
+
+
 } 
