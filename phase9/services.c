@@ -68,6 +68,9 @@ void TimerService(void) {
 
 void SyscallService(trapframe_t *p) {
 	switch(p->eax) {	//switch on p->eax to call one of the 3 services below
+		case SYS_EXEC:
+			ExecService((func_p_t)p->ebx, (int)p->ecx);
+			break;
 		case SYS_WAITCHILD:
 			WaitchildService((int *)(p->ebx), &(p->ecx));
 			break;
@@ -397,3 +400,7 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
       MyBzero((char*)signal_table[child_pid], SIG_NUM);
    }
+
+void ExecService(func_p_t p, int arg) {
+	//add stuff
+}
