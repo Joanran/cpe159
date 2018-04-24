@@ -6,6 +6,8 @@
 #include "kernel_types.h"
 #include "kernel_constants.h"
 
+void sys_exec(func_p_t p, int);
+
 void sys_exit(int);
 int sys_waitchild(int *);
 
