@@ -5,6 +5,10 @@
 #include "services.h"
 #include "kernel_types.h"
 
+void sys_exec(func_p_t p, int arg) {
+//needs stuff
+}
+
 void sys_exit(int exit_code) {
 	asm("
 	    movl %0, %%eax;
