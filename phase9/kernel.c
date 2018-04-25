@@ -18,6 +18,8 @@ semaphore_t video_sem;			// Phase 3
 term_t term[2];				//Phase 4
 func_p_t signal_table[PROC_NUM][SIG_NUM];  //phase 7
 
+pid_q_t page_q;	//phase 9
+
 void InitKernelData(void) {        // init kernel data
   	int i;
 	run_pid=-1;	
@@ -38,6 +40,9 @@ void InitKernelData(void) {        // init kernel data
 
 	for(i=0; i<PROC_NUM; i++) {
 		EnQ(i, &avail_pid_q );	//enqueue all PID numbers into the available PID queue
+	}
+	for(i=0; i<PAGE_NUM; i++) {
+		EnQ(i, &page_q);	//enqueue available pages
 	}
 	
 }
