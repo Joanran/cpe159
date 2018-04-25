@@ -6,7 +6,15 @@
 #include "kernel_types.h"
 
 void sys_exec(func_p_t p, int arg) {
-//needs stuff
+	asm("
+	    movl %0, %%eax;
+	    movl %1, %%ebx;
+	    movl %2, %%ecx;
+	    int $128;"
+	    :// no outputs	
+	    : "g" (SYS_EXEC), "g"((int)p), "g" (arg)
+	    : "eax", "ebx", "ecx"
+	);
 }
 
 void sys_exit(int exit_code) {
