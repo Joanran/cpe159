@@ -69,7 +69,10 @@ void UserProc(void) {
          
 	      
       	 if(MyStrcmp(cmd, "fork")) { 
-	 	cpid=sys_fork();	
+	 	cpid=sys_fork();
+		 
+		 sys_exec(ChildStuff, which);	//phase 9, after being forked call sys_exec
+		 
          	if(cpid==-1) {	
             		 sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
 		} else if (cpid==0) {	
@@ -80,6 +83,9 @@ void UserProc(void) {
 	 } else if ( MyStrcmp(cmd, "fork &") || MyStrcmp(cmd, "fork&") ) {
 		sys_signal(run_pid, ChildHandler); 
           cpid=sys_fork();
+		 
+		 sys_exec(ChildStuff, which);	//phase 9, after being forked call sys_exec
+		 
         	if (cpid==-1) {
             		sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
             		sys_signal(SIGCHILD, (func_p_t) 0);   // cancel handler, send NUL!
