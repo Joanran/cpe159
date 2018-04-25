@@ -421,6 +421,12 @@ void ExecService(func_p_t p, int arg) {
 	//below this gets sketchy!!!
 	temp = (int *)(PAGE_BASE + page*PAGE_SIZE); //page1=0xe00000,page2=0xe02000...
 	
+	//maybe this, can be condensed if these pieces work
+	unsigned int base_addr, offset, new_addr;
+	base_addr = (unsigned int)PAGE_BASE;
+	offset = (unsigned int)(page*PAGE_SIZE);
+	new_addr = base_addr + offset;
+	
 	MyMemcpy(&temp, &p, PAGE_SIZE); //{dest,src,bytes)	copy to the adress we found above
 	
 	MyMemcpy(&temp, &arg, 4); //place arg at the topmost 4 bytes in the DRAM page. Overwrite the topmost bytes??
