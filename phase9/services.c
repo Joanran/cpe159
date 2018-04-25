@@ -367,6 +367,10 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	EnQ(ppid, &ready_pid_q);
 	
 	EnQ(run_pid, &avail_pid_q);
+	
+	EnQ(pcb[run_pid].page, &page_q); //phase 9, reclaim the exiting childs page
+	MyBzero(... , PAGE_SIZE); //zero out the page content??. erase the new trapframe page space we made
+	
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
 	MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
   MyBzero((char *)signal_table[run_pid], SIG_NUM);
@@ -396,11 +400,28 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       *exit_code_p = pcb[child_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
 
       EnQ(child_pid, &avail_pid_q);
-      MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
+	
+	EnQ(pcb[child_pid].page, &page_q); //phase 9, reclaim the exiting childs page
+	MyBzero(... , PAGE_SIZE); //zero out the page content??. erase the new trapframe page space we made
+      
+	MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
       MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
       MyBzero((char*)signal_table[child_pid], SIG_NUM);
    }
 
 void ExecService(func_p_t p, int arg) {
 	//add stuff
+	int page, *temp;
+	page = DeQ(&page_q);
+	if (page == -1) {
+		cons_printf("Kernel Panic: No more pages!\n"); //check this message
+		return;
+	}
+	pcb[run_pid].page = page; //this was a good page so put it in pcb
+	//below this gets sketchy!!!
+	temp = (int *)(PAGE_BASE + page*PAGE_SIZE); //page1=0xe00000,page2=0xe02000...
+	
+	MyMemcpy(&temp, &p, PAGE_SIZE); //{dest,src,bytes)	copy to the adress we found above
+	
+	MyMemcpy(&temp, &arg, 4); //place arg at the topmost 4 bytes in the DRAM page. Overwrite the topmost bytes??
 }
