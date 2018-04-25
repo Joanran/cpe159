@@ -18,5 +18,6 @@ extern term_t term[2];
 
 extern func_p_t signal_table[PROC_NUM][SIG_NUM];
 
+extern pid_q_t page_q;  //phase 9
 
 #endif                              // endif of ifndef
