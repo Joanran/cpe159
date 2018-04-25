@@ -411,6 +411,27 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
 
 void ExecService(func_p_t p, int arg) {
 	//add stuff
+	
+/*************** HERES SOME onlinegdp TEST CODE FOR GETTING ADDRESS!!!! ***********
+	#include <stdio.h>
+#define PAGE_BASE 0xe00000
+#define PAGE_SIZE 4096
+int main()
+{
+    int page;
+    unsigned int offset;
+
+		for(page=0;page<20;page++) {
+	offset = (unsigned int)(page*PAGE_SIZE + PAGE_BASE);
+	printf("\n%X",offset);
+	printf("\t%i",i);
+	}
+    return 0;
+}
+*****************************************************************/	
+	
+	
+	
 	int page, *temp;
 	page = DeQ(&page_q);
 	if (page == -1) {
@@ -422,10 +443,8 @@ void ExecService(func_p_t p, int arg) {
 	temp = (int *)(PAGE_BASE + page*PAGE_SIZE); //page1=0xe00000,page2=0xe02000...
 	
 	//maybe this, can be condensed if these pieces work
-	unsigned int base_addr, offset, new_addr;
-	base_addr = (unsigned int)PAGE_BASE;
-	offset = (unsigned int)(page*PAGE_SIZE);
-	new_addr = base_addr + offset;
+	unsigned int addr;
+	addr = (unsigned int)(PAGE_BASE + page*PAGE_SIZE);
 	
 	MyMemcpy(&temp, &p, PAGE_SIZE); //{dest,src,bytes)	copy to the adress we found above
 	
