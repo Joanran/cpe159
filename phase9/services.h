@@ -35,4 +35,8 @@ void ForkService(int *);
 void SignalService(int, func_p_t);
 void WrapperService(int, func_p_t);
 void GetPpidService(int *);
+
+//phase nine below
+void ExecService(int *, int);
+
 #endif
