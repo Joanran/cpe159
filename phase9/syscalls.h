@@ -24,4 +24,6 @@ void sys_sleep(int);
 void sys_semwait(int);
 void sys_sempost(int); 
 
+void sys_exec(func_p_t, int); //phase 9
+
 #endif
