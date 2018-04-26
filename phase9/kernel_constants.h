@@ -45,4 +45,10 @@
 #define PAGE_NUM 20         (only 20 DRAM pages to experiment)
 #define PAGE_SIZE 4096      (each DRAM page is 4KB in size)
 
+
+//it was one of these down here. i hella forgot what he said which one to use....sorry
+// #define page_num(x): return x x PAGE_SIZE + PAGE_BASE
+//#define page_num(x) ( x PAGE_SIZE + PAGE_BASE)
+
+
 #endif
