@@ -369,7 +369,7 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	EnQ(run_pid, &avail_pid_q);
 	
 	EnQ(pcb[run_pid].page, &page_q); //phase 9, reclaim the exiting childs page
-	MyBzero(... , PAGE_SIZE); //zero out the page content??. erase the new trapframe page space we made
+	MyBzero((char *)page_addr(pcb[run_pid].page), PAGE_SIZE); //zero out the page content??.
 	
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
 	MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
@@ -401,10 +401,10 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
 
       EnQ(child_pid, &avail_pid_q);
 	
-	EnQ(pcb[child_pid].page, &page_q); //phase 9, reclaim the exiting childs page
-	MyBzero(... , PAGE_SIZE); //zero out the page content??. erase the new trapframe page space we made
+      EnQ(pcb[child_pid].page, &page_q); //phase 9, reclaim the exiting childs page
+      MyBzero((char*) page_addr(pcb[child_pid].page), PAGE_SIZE); //zero out the page content??. erase the new trapframe page space we made
       
-	MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
+      MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
       MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
       MyBzero((char*)signal_table[child_pid], SIG_NUM);
    }
