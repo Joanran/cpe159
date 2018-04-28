@@ -368,13 +368,13 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	
 	EnQ(run_pid, &avail_pid_q);
 	
-	EnQ(pcb[run_pid].page, &page_q); //phase 9, reclaim the exiting childs page
-	MyBzero((char *)page_addr(pcb[run_pid].page), PAGE_SIZE); //zero out the page content??.
+	EnQ(pcb[run_pid].page, &page_q); 
+	MyBzero((char *)page_addr(pcb[run_pid].page), PAGE_SIZE); 
 	
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
 	MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
-  MyBzero((char *)signal_table[run_pid], SIG_NUM);
-	
+  MyBzero((char *)signal_table[run_pid], SIG_NUM);	
+
 	run_pid = -1;
 }
 
@@ -401,31 +401,31 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
 
       EnQ(child_pid, &avail_pid_q);
 	
-      EnQ(pcb[child_pid].page, &page_q); //phase 9, reclaim the exiting childs page
-      MyBzero((char*) page_addr(pcb[child_pid].page), PAGE_SIZE); //zero out the page content??. erase the new trapframe page space we made
-      
+      EnQ(pcb[child_pid].page, &page_q); 
+      MyBzero((char*) page_addr(pcb[child_pid].page), PAGE_SIZE); 
       MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
       MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
       MyBzero((char*)signal_table[child_pid], SIG_NUM);
    }
 
 void ExecService(func_p_t p, int arg) {
-	//add stuff
-
+	trapframe_t *tempTp;
 	int page, *temp;
 	page = DeQ(&page_q);
 	if (page == -1) {
-		cons_printf("Kernel Panic: No more pages!\n"); //check this message
+		cons_printf("Kernel Panic: No more pages!\n"); 
 		return;
 	}
-	pcb[run_pid].page = page; //this was a good page so put it in pcb
-	//below this gets sketchy!!!
-	temp = (int)page_addr(page); 
-	MyMemcpy((char *)temp, (char *)p, sizeof(p)); 
-	temp = (int)page_addr(page) + PAGE_SIZE;
+	pcb[run_pid].page = page; 
+	temp = (int *)page_addr(page); 
+	MyMemcpy((char *)temp, (char *)p, PAGE_SIZE); 
+	temp = (int *)(page_addr(page) + PAGE_SIZE);
 	temp--;
 	*temp = arg;
 	temp--;
 	*temp = 0;
-	
+	tempTp =(trapframe_t *) temp;
+	tempTp--;
+	*tempTp = *pcb[run_pid].trapframe_p;
+	tempTp->eip = (int)page_addr(page);
 }

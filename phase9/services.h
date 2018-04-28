@@ -37,6 +37,6 @@ void WrapperService(int, func_p_t);
 void GetPpidService(int *);
 
 //phase nine below
-void ExecService(int *, int);
+void ExecService(func_p_t, int);
 
 #endif

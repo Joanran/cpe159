@@ -12,16 +12,20 @@ void IdleProc(void) {
    int i;
    unsigned short *p = (unsigned short *)0xb8000 + 79; // upper-right corner of display
 
+
    while(1) {
       *p = '0' + 0x0f00; // show '0' at upper-right corner
       for(i=0; i<LOOP/2; i++) asm("inb $0x80"); // delay .5 sec
       *p = ' ' + 0x0f00; // show '0' at upper-right corner
+
       for(i=0; i<LOOP/2; i++) asm("inb $0x80"); // delay, can be service
-   }
+ 
+	}
+
 }
 
 void ChildStuff(int which) {  // which terminal to display msg
-      	int my_pid, centi_sec, i;
+      int my_pid, centi_sec, i;
       char str[] = "   ";
       my_pid = sys_getpid();	//1. get my PID
       centi_sec = 50 * my_pid;	//2. calcalute sleep period (multiple of .5 seconds times my PID)
@@ -39,11 +43,12 @@ void ChildStuff(int which) {  // which terminal to display msg
 }
 
 void UserProc(void) {
-      int my_pid, centi_sec, which, cpid;
+      int my_pid, centi_sec, which, cpid, i;
       char str[] = "   ";
       char str2[] = "   ";
       char cmd[BUFF_SIZE];
-   
+      unsigned int* q, add;
+ 
       my_pid = sys_getpid();
       centi_sec = 50 * my_pid;
       str[0] = '0' + my_pid/10;
@@ -57,6 +62,7 @@ void UserProc(void) {
       sys_signal(run_pid, Ouch); 
 	
       while(1) {
+
          sys_write(which, "\n\r", 2);      // get a new line
          sys_write(which, str, 3);         // to show my PID
          sys_write(which, "enter ", 6);    // and other msgs
@@ -70,13 +76,11 @@ void UserProc(void) {
 	      
       	 if(MyStrcmp(cmd, "fork")) { 
 	 	cpid=sys_fork();
-		 
-		 sys_exec(ChildStuff, which);	//phase 9, after being forked call sys_exec
-		 
          	if(cpid==-1) {	
             		 sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
 		} else if (cpid==0) {	
-			ChildStuff(which);
+		 sys_exec(ChildStuff, which);
+		 ChildStuff(which);
 		} else {
 			ChildHandler();
 		}
@@ -84,19 +88,19 @@ void UserProc(void) {
 		sys_signal(run_pid, ChildHandler); 
           cpid=sys_fork();
 		 
-		 sys_exec(ChildStuff, which);	//phase 9, after being forked call sys_exec
-		 
         	if (cpid==-1) {
             		sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
             		sys_signal(SIGCHILD, (func_p_t) 0);   // cancel handler, send NUL!
 		} else if (cpid==0) {
-            		ChildStuff(which);                   
-	 	}
+		 sys_exec(ChildStuff, which);
+	 	 ChildStuff(which);
+		}
 		term[which].kb[0] = '\0';
 		MyBzero(cmd, BUFF_SIZE);		
 	 } // end if/else
 		
 	 sys_sleep(centi_sec);            
+
 	       
       } // end while
 	
@@ -133,7 +137,7 @@ void ChildHandler(void) {
       str[1] = '0' + child_pid%10;
 	   
       //show the message (run demo to see format)
-     
+      
       sys_write(which, "\n\r", 2);
       sys_write(which, str, 2);
 
