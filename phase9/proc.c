@@ -43,11 +43,9 @@ void ChildStuff(int which) {  // which terminal to display msg
 }
 
 void UserProc(void) {
-      int my_pid, centi_sec, which, cpid, i;
+      int my_pid, centi_sec, which, cpid;
       char str[] = "   ";
-      char str2[] = "   ";
       char cmd[BUFF_SIZE];
-      unsigned int* q, add;
  
       my_pid = sys_getpid();
       centi_sec = 50 * my_pid;
@@ -80,7 +78,6 @@ void UserProc(void) {
             		 sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
 		} else if (cpid==0) {	
 		 sys_exec(ChildStuff, which);
-		 ChildStuff(which);
 		} else {
 			ChildHandler();
 		}
@@ -93,7 +90,6 @@ void UserProc(void) {
             		sys_signal(SIGCHILD, (func_p_t) 0);   // cancel handler, send NUL!
 		} else if (cpid==0) {
 		 sys_exec(ChildStuff, which);
-	 	 ChildStuff(which);
 		}
 		term[which].kb[0] = '\0';
 		MyBzero(cmd, BUFF_SIZE);		

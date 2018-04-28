@@ -428,4 +428,5 @@ void ExecService(func_p_t p, int arg) {
 	tempTp--;
 	*tempTp = *pcb[run_pid].trapframe_p;
 	tempTp->eip = (int)page_addr(page);
+  pcb[run_pid].trapframe_p = tempTp;
 }
