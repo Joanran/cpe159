@@ -411,27 +411,7 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
 
 void ExecService(func_p_t p, int arg) {
 	//add stuff
-	
-/*************** HERES SOME onlinegdp TEST CODE FOR GETTING ADDRESS!!!! ***********
-	#include <stdio.h>
-#define PAGE_BASE 0xe00000
-#define PAGE_SIZE 4096
-int main()
-{
-    int page;
-    unsigned int offset;
 
-		for(page=0;page<20;page++) {
-	offset = (unsigned int)(page*PAGE_SIZE + PAGE_BASE);
-	printf("\n%X",offset);
-	printf("\t%i",i);
-	}
-    return 0;
-}
-*****************************************************************/	
-	
-	
-	
 	int page, *temp;
 	page = DeQ(&page_q);
 	if (page == -1) {
@@ -440,13 +420,12 @@ int main()
 	}
 	pcb[run_pid].page = page; //this was a good page so put it in pcb
 	//below this gets sketchy!!!
-	temp = (int *)(PAGE_BASE + page*PAGE_SIZE); //page1=0xe00000,page2=0xe02000...
+	temp = (int)page_addr(page); 
+	MyMemcpy((char *)temp, (char *)p, sizeof(p)); 
+	temp = (int)page_addr(page) + PAGE_SIZE;
+	temp--;
+	*temp = arg;
+	temp--;
+	*temp = 0;
 	
-	//maybe this, can be condensed if these pieces work
-	unsigned int addr;
-	addr = (unsigned int)(PAGE_BASE + page*PAGE_SIZE);
-	
-	MyMemcpy(&temp, &p, PAGE_SIZE); //{dest,src,bytes)	copy to the adress we found above
-	
-	MyMemcpy(&temp, &arg, 4); //place arg at the topmost 4 bytes in the DRAM page. Overwrite the topmost bytes??
 }
