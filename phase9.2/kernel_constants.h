@@ -47,5 +47,9 @@
 
 #define page_addr(x) ( x*PAGE_SIZE + PAGE_BASE)
 
+#define VM_START 0x20000000   // VM starts at addr 500MB
+#define VM_END 0x5fffffff     // VM ends at addr 1.5GB
+// need to finish this #define VM_TF 2G minus size of trapframe and 2 integers
+
 
 #endif
