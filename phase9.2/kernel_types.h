@@ -34,6 +34,7 @@ typedef struct {
    trapframe_t *trapframe_p; // points to saved trapframe
    int ppid;                 //place for informtion of parent process ID                
    int page;
+   int TT;
 } pcb_t;                     
 
 typedef struct {             // generic queue type
