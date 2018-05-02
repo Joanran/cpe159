@@ -18,7 +18,7 @@ semaphore_t video_sem;			// Phase 3
 term_t term[2];				//Phase 4
 func_p_t signal_table[PROC_NUM][SIG_NUM];  //phase 7
 
-pid_q_t page_q;	//phase 9
+pid_q_t;	//phase 9
 
 void InitKernelData(void) {        // init kernel data
   	int i;
@@ -145,6 +145,11 @@ void Kernel(trapframe_t *trapframe_p) {   // kernel code runs (100 times/second)
       	}
 	}	
 	ProcScheduler(); //call ProcScheduler() to select run_pid
+	
+	if(pcb[run_pid].TT != '\0' ) {	//check if the TT in the PCB of the selected process is NUL or not
+		set_cr3(pcb[run_pid].TT); //set_cr3() with this TT to swtich the translation table that MMU is using
+	} 
+	
 	ProcLoader(pcb[run_pid].trapframe_p);// given the trapframe_p of the run_pid to load/run it
 }
 
