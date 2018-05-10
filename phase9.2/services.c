@@ -362,7 +362,7 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	EnQ(ppid, &ready_pid_q);
 	
 	EnQ(run_pid, &avail_pid_q);
-	
+	pcb[run_pid].state = AVAIL;
 	EnQ(pcb[run_pid].page, &page_q); 
 	MyBzero((char *)page_addr(pcb[run_pid].page), PAGE_SIZE); 
 	
@@ -394,7 +394,7 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       *exit_code_p = pcb[child_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
 
       EnQ(child_pid, &avail_pid_q);
-      pcb[child_pid].state = READY;
+      pcb[child_pid].state = AVAIL;
       EnQ(pcb[child_pid].page, &page_q); 
       MyBzero((char*) page_addr(pcb[child_pid].page), PAGE_SIZE); 
       MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
