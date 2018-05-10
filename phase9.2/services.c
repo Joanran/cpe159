@@ -189,8 +189,6 @@ void DspService(int which) { //does the same work of the TermService of the prev
       int i, pid;
 
       if((term[which].dsp[0]=='\0') && (term[which].dsp_wait_q.size!= 0)) { //if 1st char of dsp buffer is null and the wait queue has PID
-          //str ends & there's a waiter
-         // release the 1st waiter in the wait queue:
             pid=DeQ(&term[which].dsp_wait_q);	//1. dequeue it from the wait queue
             pcb[pid].state=READY;			//2. update its state
             EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
@@ -230,16 +228,14 @@ void ReadService(int fileno, char *str, int len) {
 }
 
 void TermService(int which){
-	//phase five below
-	
-	char ch= inportb(term[which].status); //1. read the 'status' of the port
+	char ch= inportb(term[which].status); 
 			 
-      	if (ch==DSP_READY) { 	//2. if it's DSP_READY, 
-		DspService(which);		 //call DspService()
+      	if (ch==DSP_READY) {
+		DspService(which);
 	}
 	
-	if(ch==KB_READY) {	//3. if it's KB_READY,
-      		KbService(which);	//call KbService()
+	if(ch==KB_READY) {
+      		KbService(which);
 	}
 }
 	   
@@ -272,7 +268,6 @@ void KbService(int which) {
 
 	
         outportb(term[which].port, '\n');
-      //4. (not returning, continue) if there appears a waiting process in the kb wait queue of the terminal,	
       if(term[which].kb_wait_q.size > 0) {	 
 	pid=DeQ(&term[which].kb_wait_q);	
         pcb[pid].state=READY;		
@@ -301,7 +296,7 @@ void ForkService(int *ebx_p) {
 	
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
 
-  	MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], sizeof(signal_table[0]));	
+  	MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], sizeof(func_p_t signal_table[SIG_NUM]) );	
 	delta = proc_stack[*ebx_p] - proc_stack[run_pid];
 	
 	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
@@ -373,7 +368,7 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
 	MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
- 	MyBzero((char *)signal_table[run_pid], sizeof(signal_table[0]));	
+ 	MyBzero((char *)signal_table[run_pid], sizeof(func_p_t signal_table[SIG_NUM]));	
 
 	run_pid = -1;
 }
@@ -382,8 +377,7 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       int child_pid, i; // really only need these vars (besides args given)
 
 
-      for(i=1; i<PROC_NUM; i++) { //search by looping thru each PCB in the PCB array:
-         //if state ZOMBIE and ppid matches parent (run_pid) --> break loop (found)
+      for(i=1; i<PROC_NUM; i++) { 
       	if(pcb[i].state==ZOMBIE && pcb[i].ppid == run_pid) {
 		child_pid = i;
 		break;
@@ -400,12 +394,12 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       *exit_code_p = pcb[child_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
 
       EnQ(child_pid, &avail_pid_q);
-	
+      pcb[child_pid].state = READY;
       EnQ(pcb[child_pid].page, &page_q); 
       MyBzero((char*) page_addr(pcb[child_pid].page), PAGE_SIZE); 
       MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
       MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
-      MyBzero((char*)signal_table[child_pid], sizeof(signal_table[0]));
+      MyBzero((char*)signal_table[child_pid], sizeof(func_p_t signal_table[SIG_NUM]));
    }
 
 void ExecService(func_p_t p, int arg) {
