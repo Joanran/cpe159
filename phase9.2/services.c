@@ -301,7 +301,7 @@ void ForkService(int *ebx_p) {
 	
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
 
-  MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], SIG_NUM);	
+  	MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], sizeof(signal_table[0]));	
 	delta = proc_stack[*ebx_p] - proc_stack[run_pid];
 	
 	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
@@ -373,7 +373,7 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
 	MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
-  MyBzero((char *)signal_table[run_pid], SIG_NUM);	
+ 	MyBzero((char *)signal_table[run_pid], sizeof(signal_table[0]));	
 
 	run_pid = -1;
 }
@@ -405,7 +405,7 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       MyBzero((char*) page_addr(pcb[child_pid].page), PAGE_SIZE); 
       MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
       MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
-      MyBzero((char*)signal_table[child_pid], SIG_NUM);
+      MyBzero((char*)signal_table[child_pid], sizeof(signal_table[0]));
    }
 
 void ExecService(func_p_t p, int arg) {
@@ -428,5 +428,5 @@ void ExecService(func_p_t p, int arg) {
 	tempTp--;
 	*tempTp = *pcb[run_pid].trapframe_p;
 	tempTp->eip = (int)page_addr(page);
-  pcb[run_pid].trapframe_p = tempTp;
+  `	pcb[run_pid].trapframe_p = tempTp;
 }
