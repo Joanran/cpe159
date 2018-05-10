@@ -390,8 +390,8 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
 	  return;
       }
 	
-      *child_pid_p = child_pid; // found by searching the PCB for a zombie PID
-      *exit_code_p = pcb[child_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
+      *child_pid_p = pcb[run_pid].trapframe_p->ecx; // found by searching the PCB for a zombie PID
+      *exit_code_p = *pcb[run_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
 
       EnQ(child_pid, &avail_pid_q);
       pcb[child_pid].state = AVAIL;
