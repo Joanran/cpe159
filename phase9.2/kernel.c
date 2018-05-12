@@ -10,7 +10,8 @@
 
 struct i386_gate *IDT_p;
 int current_time;
-int run_pid;                       
+int run_pid;      
+int OS_TT;
 pid_q_t ready_pid_q, avail_pid_q;  
 pcb_t pcb[PROC_NUM];             
 char proc_stack[PROC_NUM][PROC_STACK_SIZE]; 
