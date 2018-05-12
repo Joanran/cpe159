@@ -146,7 +146,7 @@ void Kernel(trapframe_t *trapframe_p) {   // kernel code runs (100 times/second)
 		set_cr3(pcb[run_pid].TT); 
 	} 
 	
-	ProcLoader(VM_TF);// given the trapframe_p of the run_pid to load/run it
+	ProcLoader(VM_TF);
 }
 
 
