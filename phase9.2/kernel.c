@@ -18,15 +18,15 @@ semaphore_t video_sem;			// Phase 3
 term_t term[2];				//Phase 4
 func_p_t signal_table[PROC_NUM][SIG_NUM];  //phase 7
 
-pid_q_t;	//phase 9
+pid_q_t page_q;	//phase 9
 
 void InitKernelData(void) {        // init kernel data
   	int i;
 	run_pid=-1;	
-  MyBzero((char *)proc_stack, (PROC_STACK_SIZE*PROC_NUM));  
-  MyBzero((char *)signal_table, SIG_NUM*PROC_NUM);	// phase 7
-  MyBzero((char *)&avail_pid_q, sizeof(avail_pid_q));
-  MyBzero((char *)&ready_pid_q, sizeof(ready_pid_q));
+        MyBzero((char *)proc_stack, (PROC_STACK_SIZE*PROC_NUM));  
+        MyBzero((char *)signal_table, sizeof(signal_table));	// phase 7
+        MyBzero((char *)&avail_pid_q, sizeof(avail_pid_q));
+        MyBzero((char *)&ready_pid_q, sizeof(ready_pid_q));
 	
 	MyBzero((char *)&term[0], sizeof(term_t)); //first zero-ed it out
 	MyBzero((char *)&term[1], sizeof(term_t)); //first zero-ed it out
@@ -86,8 +86,7 @@ void InitKernelControl(void) {     // init kernel control
       }
    }
 
-void ProcScheduler(void) {              // choose run_pid to load/run
-   //if run_pid is greater than 0, return // no need if PID is a user proc
+void ProcScheduler(void) {            
    if(run_pid >0){
 	return;
    }
@@ -95,13 +94,13 @@ void ProcScheduler(void) {              // choose run_pid to load/run
 	run_pid=0;		//let run_pid be zero
    }else{			 // else: get the 1st one in ready_pid_q to be run_pid
    	run_pid=DeQ(&ready_pid_q);
-	//accumulate its totaltime by adding its runtime
+	pcb[run_pid].state= RUN;
    	pcb[run_pid].totaltime = pcb[run_pid].totaltime + pcb[run_pid].runtime; 
-  	pcb[run_pid].runtime= 0;	 //and then reset its runtime to zero
+  	pcb[run_pid].runtime= 0;	 
    }
 }
 
-int main(void) {  // OS bootstraps
+int main(void) {  
   	InitKernelData();	// initialize kernel data
   	InitKernelControl();	//initialize kernel control
 	InitTerm();		//new subroutine for phase four below
@@ -134,8 +133,6 @@ void Kernel(trapframe_t *trapframe_p) {   // kernel code runs (100 times/second)
 			break;
 	}
 
-
-   	//TimerService(); // call TimerService() to service the timer interrupt
    	if (cons_kbhit()) {     // poll keybord, retursn 1 if pressed
 		key  = cons_getchar();
       	if (key == 'n') {
@@ -144,10 +141,10 @@ void Kernel(trapframe_t *trapframe_p) {   // kernel code runs (100 times/second)
           	breakpoint();
       	}
 	}	
-	ProcScheduler(); //call ProcScheduler() to select run_pid
+	ProcScheduler();
 	
-	if(pcb[run_pid].TT != '\0' ) {	//check if the TT in the PCB of the selected process is NUL or not
-		set_cr3(pcb[run_pid].TT); //set_cr3() with this TT to swtich the translation table that MMU is using
+	if(pcb[run_pid].TT != '\0' ) {	
+		set_cr3(pcb[run_pid].TT); 
 	} 
 	
 	ProcLoader(pcb[run_pid].trapframe_p);// given the trapframe_p of the run_pid to load/run it
