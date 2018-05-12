@@ -404,7 +404,7 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
 
 void ExecService(func_p_t p, int arg) {
 	trapframe_t *tempTp;
-	int page, *temp;
+	int page, *temp, *q;
 	page = DeQ(&page_q);
 	if (page == -1) {
 		cons_printf("Kernel Panic: No more pages!\n"); 
@@ -423,4 +423,19 @@ void ExecService(func_p_t p, int arg) {
 	*tempTp = *pcb[run_pid].trapframe_p;
 	tempTp->eip = (int)page_addr(page);
   `	pcb[run_pid].trapframe_p = tempTp;
+	
+	//phase A
+	
+	//phase A, hint 1
+	pcb[run_pid].TT= page_addr(pcb[run_pid].page[TT]);  //Build the main Translation Table (TT) 
+      	MyBzero((char *)pcb[run_pid].TT, sizeof(PAGE_SIZE));  // Clear all entries in TT (MyBzero it)
+      	MyMemcpy((char *)pcb[run_pid].TT, (char*)OS_TT, sizeof(int[4]));  //Copy to TT (1st 4 entries) from OS_TT (1st 4 entries)
+
+	q=(int *)pcb[run_pid].TT;  //Use an integer pointer q to point to the address of TT first.
+
+      	entry=(VM_START);  //Get an entry number from the 1st 10 bits of VM_START.
+      	//Set what the entry points to (based on q) = IT address bitwise-or with 0x003 (two of the flags).
+	//Get an entry number from the 1st 10 bits of VM_END.
+      	//Set what the entry points to (based on q) = ST address bitwise-or with 0x003 (two of the flags).
+
 }
