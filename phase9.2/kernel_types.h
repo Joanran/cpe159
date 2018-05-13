@@ -8,6 +8,7 @@
 typedef void (*func_p_t)(); // void-return function pointer type
 
 typedef enum {AVAIL, READY, RUN, SLEEP, WAIT, WAITCHILD, ZOMBIE} state_t;
+typedef enum {TT, IT, ST, IP, SP} vm_data_t;
 
 typedef struct {
    //phase six, replaced regs[4]
