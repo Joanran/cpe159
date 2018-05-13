@@ -349,12 +349,17 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	
 	EnQ(run_pid, &avail_pid_q);
 	pcb[run_pid].state = AVAIL;
-	EnQ((int)pcb[run_pid].page, &page_q); 
-	MyBzero((char *)(int)page_addr(pcb[run_pid].page), PAGE_SIZE); 	
+	// Reclaim all five pages and ZERO them out.
+        // Set the MMU's TT to OS_TT
+        set_cr3(OS_TT);
+        for(i = 0; i < NUM_OF_PAGES; i++) {
+      	  EnQ((int)pcb[run_pid].page[i], &page_q); 
+        }
+        MyBzero((char*) page_addr(pcb[run_pid].page[i]), PAGE_SIZE*NUM_OF_PAGES); 
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
-	MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
  	MyBzero((char *)signal_table[run_pid], sizeof(signal_table[SIG_NUM]));
-	run_pid=-1;
+	MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
+	run_pid =-1;
 }
 
 void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
@@ -379,12 +384,16 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       EnQ(child_pid, &avail_pid_q);
       pcb[child_pid].state = AVAIL;
 
-      EnQ((int)pcb[child_pid].page, &page_q); 
-      MyBzero((char*) page_addr(pcb[child_pid].page), PAGE_SIZE); 
+      // Reclaim all five pages and ZERO them out.
+      // Set the MMU's TT to OS_TT
+      set_cr3(OS_TT);
+      for(i = 0; i < NUM_OF_PAGES; i++) {
+      	EnQ((int)pcb[child_pid].page[i], &page_q); 
+      }
+      MyBzero((char*) page_addr(pcb[child_pid].page[i]), PAGE_SIZE*NUM_OF_PAGES); 
       MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
-      MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
       MyBzero((char*)signal_table[child_pid], sizeof(signal_table[SIG_NUM]));
-
+      MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
    }
 
 void ExecService(func_p_t p, int arg) {
@@ -407,5 +416,5 @@ void ExecService(func_p_t p, int arg) {
 	tempTp--;
 	*tempTp = *pcb[run_pid].trapframe_p;
 	tempTp->eip = (int)page_addr(page);
-  pcb[run_pid].trapframe_p = tempTp;
+  	pcb[run_pid].trapframe_p = tempTp;
 }
