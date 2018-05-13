@@ -28,6 +28,7 @@ void InitKernelData(void) {        // init kernel data
         MyBzero((char *)signal_table, sizeof(signal_table));	// phase 7
         MyBzero((char *)&avail_pid_q, sizeof(avail_pid_q));
         MyBzero((char *)&ready_pid_q, sizeof(ready_pid_q));
+	MyBzero((char *)&page_q, sizeof(page_q);
 
 	
 	MyBzero((char *)&term[0], sizeof(term_t)); //first zero-ed it out
