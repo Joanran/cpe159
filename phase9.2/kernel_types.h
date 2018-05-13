@@ -33,8 +33,7 @@ typedef struct {
    int wake_time;	           // wake time...
    trapframe_t *trapframe_p; // points to saved trapframe
    int ppid;                 //place for informtion of parent process ID                
-   int page;
-   //int page[5];
+   int page[5];
    int TT;
 } pcb_t;                     
 
