@@ -52,5 +52,6 @@
 #define VM_END 0x5fffffff     // VM ends at addr 1.5GB
 #define VM_TF VM_END  - sizeof(trapframe_t) - sizeof(int[2]) + sizeof(char)
 #define FIRST10_OF_32 0xffc0000
+#define SECOND10_OF_32 0x00eff00
 
 #endif
