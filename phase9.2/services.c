@@ -398,16 +398,45 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
 
 void ExecService(func_p_t p, int arg) {
 	trapframe_t *tempTp;
-	int page, *temp;
-	page = DeQ(&page_q);
-	if (page == -1) {
-		cons_printf("Kernel Panic: No more pages!\n"); 
-		return;
+	int page, *temp, i, entry;
+	for (i=0; i < NUM_OF_PAGES; i++){
+		page = DeQ(&page_q);
+		if (page == -1) {
+			cons_printf("Kernel Panic: No more pages!\n"); 
+			return;
+		}
+		pcb[run_pid].page[i] = page; 		
 	}
-	pcb[run_pid].page = page; 
-	temp = (int *)page_addr(page); 
+	// Sets the TT address in PCB
+	pcb[run_pid].TT = pcb[run_pid].page[TT];
+	
+	// Build the TT
+	temp = (int *)page_addr(pcb[run_pid].TT);
+	MyBzero((char*)temp, PAGE_SIZE);
+	MyMemcpy((char*)temp, (char*)OS_TT, sizeof(int[4])); // copy the 1st four entries of OS_TT to pcb's TT
+	entry = (VM_START & FIRST10_OF_32) >> 22;
+	temp[entry] = page_addr(pcb[run_pid].page[IT]) | 0x003; // IT addr plus the two flags
+	entry = (VN_END & FIRST10_OF_32) >> 22;
+	temp[entry] = page_addr(pcb[run_pid].page[ST]) | 0x003;// ST addr plus the two flags
+	
+	// Build the IT
+	temp = (int *)page_addr(pcb[run_pid].page[IT]);
+	MyBzero((char*)temp, PAGE_SIZE);
+	entry = (VM_START & SECOND10_OF_32) >> 12;
+	temp[entry] = page_addr(pcb[run_pid].page[IP]) | 0x003; // IT addr plus the two flags
+	
+	// Build the ST
+	temp = (int *)page_addr(pcb[run_pid].page[ST]);
+	MyBzero((char*)temp, PAGE_SIZE);
+	entry = (VM_END & SECOND10_OF_32) >> 12;
+	temp[entry] = page_addr(pcb[run_pid].page[SP]) | 0x003; // IT addr plus the two flags
+	
+	// Build the IP
+	temp = (int *)page_addr(pcb[run_pid].page[IP]); 
 	MyMemcpy((char *)temp, (char *)p, PAGE_SIZE); 
-	temp = (int *)(page_addr(page) + PAGE_SIZE);
+	
+	// Build the SP
+	temp = (int *)(page_addr(pcb[run_pid].page[SP]) + PAGE_SIZE);
 	temp--;
 	*temp = arg;
 	temp--;
@@ -415,6 +444,6 @@ void ExecService(func_p_t p, int arg) {
 	tempTp =(trapframe_t *) temp;
 	tempTp--;
 	*tempTp = *pcb[run_pid].trapframe_p;
-	tempTp->eip = (int)page_addr(page);
-  	pcb[run_pid].trapframe_p = tempTp;
-}
+	tempTp->eip = (int)VM_START;
+  	pcb[run_pid].trapframe_p = VM_TF;
+	
