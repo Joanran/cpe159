@@ -47,6 +47,7 @@
 
 #define page_addr(x) ( x*PAGE_SIZE + PAGE_BASE)
 
+#define NUM_OF_PAGES 5
 #define VM_START 0x20000000   // VM starts at addr 500MB
 #define VM_END 0x5fffffff     // VM ends at addr 1.5GB
 #define VM_TF VM_END  - sizeof(trapframe_t) - sizeof(int[2]) + sizeof(char)
