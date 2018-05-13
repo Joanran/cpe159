@@ -337,9 +337,11 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	ppid = pcb[run_pid].ppid;
 	if (pcb[ppid].state != WAITCHILD) {
 	    pcb[run_pid].state = ZOMBIE;
+	    // Set the MMU's TT to OS_TT
+            set_cr3(OS_TT);
+	    run_pid = -1;
 	    if (signal_table[ppid][SIGCHILD] != NULL)
 		    WrapperService(ppid, signal_table[ppid][SIGCHILD]);
-	    run_pid = -1;
 	    return;	
 	}
 	*(int*)(pcb[ppid].trapframe_p->ebx) = exit_code;
@@ -378,7 +380,7 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
 	  return;
       }
 	
-      *child_pid_p = pcb[run_pid].trapframe_p->ecx; // found by searching the PCB for a zombie PID
+      *child_pid_p = child_pid; // found by searching the PCB for a zombie PID
       *exit_code_p = *pcb[run_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
 
       EnQ(child_pid, &avail_pid_q);
@@ -447,3 +449,4 @@ void ExecService(func_p_t p, int arg) {
 	tempTp->eip = (int)VM_START;
   	pcb[run_pid].trapframe_p = VM_TF;
 	
+}
