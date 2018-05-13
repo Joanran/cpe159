@@ -10,7 +10,8 @@
 
 struct i386_gate *IDT_p;
 int current_time;
-int run_pid;                       
+int run_pid;      
+int OS_TT;
 pid_q_t ready_pid_q, avail_pid_q;  
 pcb_t pcb[PROC_NUM];             
 char proc_stack[PROC_NUM][PROC_STACK_SIZE]; 
@@ -53,6 +54,7 @@ void InitKernelControl(void) {     // init kernel control
 	video_sem.val = 1;
 	video_sem.wait_q.size=0;
 
+	OS_TT = get_cr3(); //phase A
 	
 	IDT_p = get_idt_base(); //get IDT location
 	//show: "IDT located at DRAM addr %x (%d).\n" (both address of IDT)
