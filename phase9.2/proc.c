@@ -57,7 +57,7 @@ void UserProc(void) {
 	else
 		which = TERM1;
 
-      sys_signal(run_pid, Ouch); 
+      sys_signal(my_pid, Ouch); 
 	
       while(1) {
 
@@ -82,16 +82,14 @@ void UserProc(void) {
 			ChildHandler();
 		}
 	 } else if ( MyStrcmp(cmd, "fork &") || MyStrcmp(cmd, "fork&") ) {
-		sys_signal(run_pid, ChildHandler); 
-          cpid=sys_fork();
-		 
+		sys_signal(my_pid, ChildHandler); 
+     		cpid=sys_fork();	 
         	if (cpid==-1) {
             		sys_write(which, "\n\rUserProc: cannot fork!\n\r", 28);
             		sys_signal(SIGCHILD, (func_p_t) 0);   // cancel handler, send NUL!
 		} else if (cpid==0) {
-		 sys_exec(ChildStuff, which);
+		 	sys_exec(ChildStuff, which);
 		}
-		term[which].kb[0] = '\0';
 		MyBzero(cmd, BUFF_SIZE);		
 	 } // end if/else
 		
@@ -123,10 +121,10 @@ void ChildHandler(void) {
       int which, child_pid, exit_code;
       char str[] = "   ";
       char str2[] = "   ";
-      
+      int pid = sys_getpid();
       child_pid = sys_waitchild(&exit_code); // block if immediately called
       
-      which = (run_pid % 2) ? TERM1 : TERM2; //determine which terminal to use (from its own PID)
+      which = (pid % 2) ? TERM1 : TERM2; //determine which terminal to use (from its own PID)
       
       //build str from child_pid
       str[0] = '0' + child_pid/10;
@@ -147,4 +145,5 @@ void ChildHandler(void) {
       sys_write(which, str2, 2);
 
 
-} 
+}
+

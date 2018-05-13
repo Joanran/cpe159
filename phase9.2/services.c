@@ -188,14 +188,6 @@ void SempostService(int sem_num) {
 void DspService(int which) { //does the same work of the TermService of the previous phase
       int i, pid;
 
-      if((term[which].dsp[0]=='\0') && (term[which].dsp_wait_q.size!= 0)) { //if 1st char of dsp buffer is null and the wait queue has PID
-            pid=DeQ(&term[which].dsp_wait_q);	//1. dequeue it from the wait queue
-            pcb[pid].state=READY;			//2. update its state
-            EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
-      }
-	
-
-	
       if(term[which].dsp[0]=='\0') return;	//if 1st character of dsp buffer is null, return; // nothing to dsp
 
       outportb(term[which].port, term[which].dsp[0]); // disp 1st char      
@@ -207,24 +199,20 @@ void DspService(int which) { //does the same work of the TermService of the prev
 	 }
       }
 	
-
+      if((term[which].dsp[0]=='\0') && (term[which].dsp_wait_q.size!= 0)) { //if 1st char of dsp buffer is null and the wait queue has PID
+            pid=DeQ(&term[which].dsp_wait_q);	//1. dequeue it from the wait queue
+            pcb[pid].state=READY;			//2. update its state
+            EnQ(pid, &ready_pid_q);			//3. enqueue it to ready PID queue
+      }
    }
 
 void ReadService(int fileno, char *str, int len) {
 	int which;
-	if(fileno==TERM1) { //determine which term_t to use (from the given argument)
-		//"block" the running process to the terminal keyboard wait queue
-		which=0;
-		EnQ(run_pid, &term[which].kb_wait_q);
-		pcb[run_pid].state=WAIT;
-		run_pid=-1;
-	} else if (fileno==TERM2) { //determine which term_t to use (from the given argument)
-		//"block" the running process to the terminal keyboard wait queue
-		which=1;
-		EnQ(run_pid, &term[which].kb_wait_q);
-		pcb[run_pid].state=WAIT;
-		run_pid=-1;
-	}
+	which = (fileno==TERM1)? 0:1;
+
+	EnQ(run_pid, &term[which].kb_wait_q);
+	pcb[run_pid].state=WAIT;
+	run_pid=-1;
 }
 
 void TermService(int which){
@@ -261,13 +249,10 @@ void KbService(int which) {
       }
 
       if(ch != '\r') {
-        outportb(term[which].port, ch);	
+              outportb(term[which].port, ch);	
 	      MyStrAppend(term[which].kb, ch);
-        return; //and just return
-	}
-
-	
-        outportb(term[which].port, '\n');
+              return; //and just return
+      } 	
       if(term[which].kb_wait_q.size > 0) {	 
 	pid=DeQ(&term[which].kb_wait_q);	
         pcb[pid].state=READY;		
@@ -296,7 +281,8 @@ void ForkService(int *ebx_p) {
 	
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
 
-  	MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], sizeof(func_p_t signal_table[SIG_NUM]) );	
+  MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], sizeof(signal_table[SIG_NUM]));	
+
 	delta = proc_stack[*ebx_p] - proc_stack[run_pid];
 	
 	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
@@ -351,9 +337,9 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	ppid = pcb[run_pid].ppid;
 	if (pcb[ppid].state != WAITCHILD) {
 	    pcb[run_pid].state = ZOMBIE;
-	    run_pid = ppid;
 	    if (signal_table[ppid][SIGCHILD] != NULL)
 		    WrapperService(ppid, signal_table[ppid][SIGCHILD]);
+	    run_pid = -1;
 	    return;	
 	}
 	*(int*)(pcb[ppid].trapframe_p->ebx) = exit_code;
@@ -363,19 +349,16 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	
 	EnQ(run_pid, &avail_pid_q);
 	pcb[run_pid].state = AVAIL;
-	EnQ(pcb[run_pid].page, &page_q); 
-	MyBzero((char *)page_addr(pcb[run_pid].page), PAGE_SIZE); 
-	
+	EnQ((int)pcb[run_pid].page, &page_q); 
+	MyBzero((char *)(int)page_addr(pcb[run_pid].page), PAGE_SIZE); 	
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
 	MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
- 	MyBzero((char *)signal_table[run_pid], sizeof(func_p_t signal_table[SIG_NUM]));	
-
-	run_pid = -1;
+ 	MyBzero((char *)signal_table[run_pid], sizeof(signal_table[SIG_NUM]));
+	run_pid=-1;
 }
 
 void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       int child_pid, i; // really only need these vars (besides args given)
-
 
       for(i=1; i<PROC_NUM; i++) { 
       	if(pcb[i].state==ZOMBIE && pcb[i].ppid == run_pid) {
@@ -395,11 +378,13 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
 
       EnQ(child_pid, &avail_pid_q);
       pcb[child_pid].state = AVAIL;
-      EnQ(pcb[child_pid].page, &page_q); 
+
+      EnQ((int)pcb[child_pid].page, &page_q); 
       MyBzero((char*) page_addr(pcb[child_pid].page), PAGE_SIZE); 
       MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
       MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
-      MyBzero((char*)signal_table[child_pid], sizeof(func_p_t signal_table[SIG_NUM]));
+      MyBzero((char*)signal_table[child_pid], sizeof(signal_table[SIG_NUM]));
+
    }
 
 void ExecService(func_p_t p, int arg) {
@@ -422,7 +407,7 @@ void ExecService(func_p_t p, int arg) {
 	tempTp--;
 	*tempTp = *pcb[run_pid].trapframe_p;
 	tempTp->eip = (int)page_addr(page);
-  `	pcb[run_pid].trapframe_p = tempTp;
+  pcb[run_pid].trapframe_p = tempTp;
 	
 	//phase A
 	
