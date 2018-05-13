@@ -339,7 +339,6 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 	    pcb[run_pid].state = ZOMBIE;
 	    if (signal_table[ppid][SIGCHILD] != NULL)
 		    WrapperService(ppid, signal_table[ppid][SIGCHILD]);
-   	     
 	    run_pid = -1;
 	    return;	
 	}
@@ -384,7 +383,6 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
       MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
       MyBzero((char*)signal_table[child_pid], sizeof(signal_table[SIG_NUM]));
-      
    }
 
 void ExecService(func_p_t p, int arg) {
