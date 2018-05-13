@@ -27,6 +27,7 @@ void InitKernelData(void) {        // init kernel data
         MyBzero((char *)signal_table, sizeof(signal_table));	// phase 7
         MyBzero((char *)&avail_pid_q, sizeof(avail_pid_q));
         MyBzero((char *)&ready_pid_q, sizeof(ready_pid_q));
+
 	
 	MyBzero((char *)&term[0], sizeof(term_t)); //first zero-ed it out
 	MyBzero((char *)&term[1], sizeof(term_t)); //first zero-ed it out
@@ -51,6 +52,7 @@ void InitKernelControl(void) {     // init kernel control
 	current_time=0;
 	video_sem.val = 1;
 	video_sem.wait_q.size=0;
+
 	
 	IDT_p = get_idt_base(); //get IDT location
 	//show: "IDT located at DRAM addr %x (%d).\n" (both address of IDT)

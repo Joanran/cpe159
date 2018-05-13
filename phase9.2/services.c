@@ -188,7 +188,6 @@ void SempostService(int sem_num) {
 void DspService(int which) { //does the same work of the TermService of the previous phase
       int i, pid;
 
-		
       if(term[which].dsp[0]=='\0') return;	//if 1st character of dsp buffer is null, return; // nothing to dsp
 
       outportb(term[which].port, term[which].dsp[0]); // disp 1st char      
@@ -282,7 +281,8 @@ void ForkService(int *ebx_p) {
 	
 	MyMemcpy(proc_stack[*ebx_p], proc_stack[run_pid], PROC_STACK_SIZE);
 
-  	MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], sizeof(signal_table[SIG_NUM]));	
+  MyMemcpy((char *)signal_table[*ebx_p], (char*)signal_table[run_pid], sizeof(signal_table[SIG_NUM]));	
+
 	delta = proc_stack[*ebx_p] - proc_stack[run_pid];
 	
 	pcb[*ebx_p].trapframe_p = (trapframe_t *)((int)pcb[run_pid].trapframe_p+delta); 
@@ -359,7 +359,7 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 
 void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       int child_pid, i; // really only need these vars (besides args given)
-      // Tries to find a child that is a zombie
+
       for(i=1; i<PROC_NUM; i++) { 
       	if(pcb[i].state==ZOMBIE && pcb[i].ppid == run_pid) {
 		child_pid = i;
@@ -373,16 +373,18 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
 	  return;
       }
 	
-      *child_pid_p = child_pid; // found by searching the PCB for a zombie PID
-      *exit_code_p = pcb[child_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
+      *child_pid_p = pcb[run_pid].trapframe_p->ecx; // found by searching the PCB for a zombie PID
+      *exit_code_p = *pcb[run_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
 
       EnQ(child_pid, &avail_pid_q);
       pcb[child_pid].state = AVAIL;
+
       EnQ((int)pcb[child_pid].page, &page_q); 
       MyBzero((char*) page_addr(pcb[child_pid].page), PAGE_SIZE); 
       MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
       MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
       MyBzero((char*)signal_table[child_pid], sizeof(signal_table[SIG_NUM]));
+
    }
 
 void ExecService(func_p_t p, int arg) {
@@ -405,5 +407,5 @@ void ExecService(func_p_t p, int arg) {
 	tempTp--;
 	*tempTp = *pcb[run_pid].trapframe_p;
 	tempTp->eip = (int)page_addr(page);
-  	pcb[run_pid].trapframe_p = tempTp;
+  pcb[run_pid].trapframe_p = tempTp;
 }
