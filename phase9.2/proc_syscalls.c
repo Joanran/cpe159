@@ -95,7 +95,7 @@ int sys_getppid(void) {
 }
 
 void sys_write(int fileno, char *str, int len) {
-   if(len == 0){
+   if(*str == '\0'){
 	   return;     // am I allowed to mix normal C with asm?
    }                     
    asm("movl %0, %%eax;      // send service #4 (SYS_WRITE) via eax
