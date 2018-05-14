@@ -418,7 +418,7 @@ void ExecService(func_p_t p, int arg) {
 	MyMemcpy((char*)temp, (char*)OS_TT, sizeof(int[4])); // copy the 1st four entries of OS_TT to pcb's TT
 	entry = (VM_START & FIRST10_OF_32) >> 22;
 	temp[entry] = page_addr(pcb[run_pid].page[IT]) | 0x003; // IT addr plus the two flags
-	entry = (VN_END & FIRST10_OF_32) >> 22;
+	entry = (VM_END & FIRST10_OF_32) >> 22;
 	temp[entry] = page_addr(pcb[run_pid].page[ST]) | 0x003;// ST addr plus the two flags
 	
 	// Build the IT
