@@ -333,7 +333,7 @@ void WrapperService(int pid, func_p_t p){
 }
 
 void ExitService(int exit_code) { // as child calls sys_exit()
-	int ppid;
+	int ppid, i;
 	ppid = pcb[run_pid].ppid;
 	if (pcb[ppid].state != WAITCHILD) {
 	    pcb[run_pid].state = ZOMBIE;
@@ -357,7 +357,7 @@ void ExitService(int exit_code) { // as child calls sys_exit()
         for(i = 0; i < NUM_OF_PAGES; i++) {
       	  EnQ((int)pcb[run_pid].page[i], &page_q); 
         }
-        MyBzero((char*) page_addr(pcb[run_pid].page[i]), PAGE_SIZE*NUM_OF_PAGES); 
+        MyBzero((char*) page_addr(pcb[run_pid].page[0]), PAGE_SIZE*NUM_OF_PAGES); 
 	MyBzero((char *)&pcb[run_pid], sizeof(pcb_t));
  	MyBzero((char *)signal_table[run_pid], sizeof(signal_table[SIG_NUM]));
 	MyBzero(proc_stack[run_pid], PROC_STACK_SIZE);
@@ -366,7 +366,6 @@ void ExitService(int exit_code) { // as child calls sys_exit()
 
 void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       int child_pid, i; // really only need these vars (besides args given)
-
       for(i=1; i<PROC_NUM; i++) { 
       	if(pcb[i].state==ZOMBIE && pcb[i].ppid == run_pid) {
 		child_pid = i;
@@ -381,7 +380,10 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       }
 	
       *child_pid_p = child_pid; // found by searching the PCB for a zombie PID
-      *exit_code_p = *pcb[run_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
+      set_cr3(pcb[child_pid].TT);
+      *exit_code_p = pcb[child_pid].trapframe_p->ebx; // the child's exit code is found in ebx in the trapframe.
+      
+      set_cr3(OS_TT);
 
       EnQ(child_pid, &avail_pid_q);
       pcb[child_pid].state = AVAIL;
@@ -392,7 +394,7 @@ void WaitchildService(int *exit_code_p, int *child_pid_p) { // parent requests
       for(i = 0; i < NUM_OF_PAGES; i++) {
       	EnQ((int)pcb[child_pid].page[i], &page_q); 
       }
-      MyBzero((char*) page_addr(pcb[child_pid].page[i]), PAGE_SIZE*NUM_OF_PAGES); 
+      MyBzero((char*) page_addr(pcb[child_pid].page[0]), PAGE_SIZE*NUM_OF_PAGES); 
       MyBzero((char*)&pcb[child_pid], sizeof(pcb_t));
       MyBzero((char*)signal_table[child_pid], sizeof(signal_table[SIG_NUM]));
       MyBzero(proc_stack[child_pid], PROC_STACK_SIZE);
@@ -410,15 +412,15 @@ void ExecService(func_p_t p, int arg) {
 		pcb[run_pid].page[i] = page; 		
 	}
 	// Sets the TT address in PCB
-	pcb[run_pid].TT = pcb[run_pid].page[TT];
+	pcb[run_pid].TT = page_addr(pcb[run_pid].page[TT]);
 	
 	// Build the TT
-	temp = (int *)page_addr(pcb[run_pid].TT);
+	temp = (int *)pcb[run_pid].TT;
 	MyBzero((char*)temp, PAGE_SIZE);
 	MyMemcpy((char*)temp, (char*)OS_TT, sizeof(int[4])); // copy the 1st four entries of OS_TT to pcb's TT
 	entry = (VM_START & FIRST10_OF_32) >> 22;
 	temp[entry] = page_addr(pcb[run_pid].page[IT]) | 0x003; // IT addr plus the two flags
-	entry = (VN_END & FIRST10_OF_32) >> 22;
+	entry = (VM_END & FIRST10_OF_32) >> 22;
 	temp[entry] = page_addr(pcb[run_pid].page[ST]) | 0x003;// ST addr plus the two flags
 	
 	// Build the IT
@@ -436,7 +438,8 @@ void ExecService(func_p_t p, int arg) {
 	// Build the IP
 	temp = (int *)page_addr(pcb[run_pid].page[IP]); 
 	MyMemcpy((char *)temp, (char *)p, PAGE_SIZE); 
-	
+  pcb[run_pid].trapframe_p->eip = (int) VM_START;
+
 	// Build the SP
 	temp = (int *)(page_addr(pcb[run_pid].page[SP]) + PAGE_SIZE);
 	temp--;
@@ -446,7 +449,6 @@ void ExecService(func_p_t p, int arg) {
 	tempTp =(trapframe_t *) temp;
 	tempTp--;
 	*tempTp = *pcb[run_pid].trapframe_p;
-	tempTp->eip = (int)VM_START;
-  	pcb[run_pid].trapframe_p = VM_TF;
+  pcb[run_pid].trapframe_p = (int)VM_TF;
 	
 }

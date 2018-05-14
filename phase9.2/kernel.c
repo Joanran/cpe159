@@ -12,27 +12,23 @@ struct i386_gate *IDT_p;
 int current_time;
 int run_pid;      
 int OS_TT;
-pid_q_t ready_pid_q, avail_pid_q;  
+pid_q_t ready_pid_q, avail_pid_q, page_q;  
 pcb_t pcb[PROC_NUM];             
 char proc_stack[PROC_NUM][PROC_STACK_SIZE]; 
 semaphore_t video_sem;			// Phase 3
 term_t term[2];				//Phase 4
 func_p_t signal_table[PROC_NUM][SIG_NUM];  //phase 7
 
-pid_q_t page_q;	//phase 9
-
 void InitKernelData(void) {        // init kernel data
   	int i;
-	run_pid=-1;	
-        MyBzero((char *)proc_stack, (PROC_STACK_SIZE*PROC_NUM));  
-        MyBzero((char *)signal_table, sizeof(signal_table));	// phase 7
-        MyBzero((char *)&avail_pid_q, sizeof(avail_pid_q));
-        MyBzero((char *)&ready_pid_q, sizeof(ready_pid_q));
-	MyBzero((char *)&page_q, sizeof(page_q);
-
-	
-	MyBzero((char *)&term[0], sizeof(term_t)); //first zero-ed it out
-	MyBzero((char *)&term[1], sizeof(term_t)); //first zero-ed it out
+	  run_pid=-1;	
+    MyBzero((char *)proc_stack, (PROC_STACK_SIZE*PROC_NUM));  
+    MyBzero((char *)signal_table, sizeof(signal_table));	// phase 7
+    MyBzero((char *)&avail_pid_q, sizeof(avail_pid_q));
+    MyBzero((char *)&ready_pid_q, sizeof(ready_pid_q));
+    MyBzero((char *)&page_q, sizeof(page_q));	
+	  MyBzero((char *)&term[0], sizeof(term_t)); //first zero-ed it out
+	  MyBzero((char *)&term[1], sizeof(term_t)); //first zero-ed it out
 	
 	term[0].port=0x2f8;
 	term[1].port=0x3e8;
@@ -148,7 +144,7 @@ void Kernel(trapframe_t *trapframe_p) {   // kernel code runs (100 times/second)
 	}	
 	ProcScheduler();
 	
-	if(pcb[run_pid].TT != '\0' ) {	
+	if(pcb[run_pid].TT != 0 ) {	
 		set_cr3(pcb[run_pid].TT); 
 	} 
 	

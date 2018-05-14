@@ -50,8 +50,8 @@
 #define NUM_OF_PAGES 5
 #define VM_START 0x20000000   // VM starts at addr 500MB
 #define VM_END 0x5fffffff     // VM ends at addr 1.5GB
-#define VM_TF VM_END  - sizeof(trapframe_t) - sizeof(int[2]) + sizeof(char)
-#define FIRST10_OF_32 0xffc0000
-#define SECOND10_OF_32 0x00eff00
+#define VM_TF VM_END + sizeof(char) - sizeof(trapframe_t) - sizeof(int[2])
+#define FIRST10_OF_32 0xffc00000
+#define SECOND10_OF_32 0x003ff000
 
 #endif
