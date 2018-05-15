@@ -449,6 +449,6 @@ void ExecService(func_p_t p, int arg) {
 	tempTp =(trapframe_t *) temp;
 	tempTp--;
 	*tempTp = *pcb[run_pid].trapframe_p;
-  pcb[run_pid].trapframe_p = (int)VM_TF;
+  pcb[run_pid].trapframe_p = (trapframe_t *)(int)VM_TF;
 	
 }
